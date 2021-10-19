@@ -40,8 +40,8 @@ https://emacsconf.org/2021/talks/news/ .
    - [[https://github.com/minad/consult][consult]] (a package with many useful completing commands)
    - [[https://github.com/raxod502/selectrum][selectrum]] and [[https://github.com/minad/vertico][vertico]], which are both user interfaces for completion,
    - and [[https://github.com/minad/marginalia][marginalia]], which adds notes to completions so that it's
-     easier to get info right away or choose the right thing.  There
-   was a [[https://www.reddit.com/r/emacs/comments/ppg98f/which_completion_framework_do_you_use_and_why/][long discussion about completion frameworks]] in September, so
+     easier to get info right away or choose the right thing.
+   There was a [[https://www.reddit.com/r/emacs/comments/ppg98f/which_completion_framework_do_you_use_and_why/][long discussion about completion frameworks]] in September, so
    you can check it out for tips on choosing.
 5. [[https://github.com/oantolin/embark][Embark]] is usually mentioned as part of that group of packages, but
    it's well worth looking into even if you use a different system. It
