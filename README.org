@@ -1,0 +1,97 @@
+#+TITLE: Emacs News Highlights
+
+| Talk page            | https://emacsconf.org/2021/talks/news            |
+| Contact              | Sacha Chua [[mailto:sacha@sachachua.com][sacha@sachachua.com]]                             |
+# | Video with subtitles | [[file:emacs-conf-2020-emacs-news-highlights-sacha-chua.webm]] |
+# | Audio only           | [[file:audio.ogg]]                                             |
+
+(* 5 150) 750
+
+Draft of my talk for EmacsConf 2021
+
+* Talk plans
+
+I'm Sacha Chua, and here are a few Emacs News highlights for 2021.  If
+you want to follow the links, check out the wiki page at
+https://emacsconf.org/2021/talks/news/ .
+
+1. The Emacs developers are currently working on Emacs 28.1, which
+   will be the next major release of Emacs. Native compilation should
+   make everything way faster, and emoji support will probably make
+   things more fun. John Wiegley will share more Emacs 28 details in
+   his update, so check out his talk.
+2. [[https://orgmode.org/Changes.html][Org Mode is now at version 9.5]]. Interesting new features include a
+   library for managing citations and the ability to run code blocks
+   in the background with the =:async= keyword.  If you've been
+   getting your Org packages from Org ELPA, you can update your
+   configuration to get Org from GNU ELPA and org-contrib from NonGNU
+   ELPA. The [[https://blog.jethro.dev/posts/org_roam_v2/][new major release of the Org Roam package]] should be a
+   faster and more consistent way to use Org to manage a
+  knowledgebase.  The best way to keep up with Org changes is to
+   check out Tecosaur's new [[https://blog.tecosaur.com/tmio/][This Month in Org]] blog.
+3. New [[https://emacsair.me/2021/05/25/magit-3.0/][Magit major release]], now up to version 3.3. Jonas has split
+   some functionality into other packages so that Emacs Lisp
+   developers can use them, such as transient, magit-section, and
+   forge. Here's an example of using magit-section to [[https://www.reddit.com/r/emacs/comments/pkuwcq/and_bufler_taxy_magitsection_a_concise_language/][manage groups of
+   buffers]], and you can learn more about Transient in the talk on
+   [[https://emacsconf.org/2021/talks/dsl/][self-describing smart domain-specific languages]] or DSLs.
+4. In terms of smaller packages, there's been a lot of interesting
+   packages, blog posts, and videos around completion, specifically:
+   - [[https://github.com/minad/consult][consult]] (a package with many useful completing commands)
+   - [[https://github.com/raxod502/selectrum][selectrum]] and [[https://github.com/minad/vertico][vertico]], which are both user interfaces for completion,
+   - and [[https://github.com/minad/marginalia][marginalia]], which adds notes to completions so that it's
+     easier to get info right away or choose the right thing.  There
+   was a [[https://www.reddit.com/r/emacs/comments/ppg98f/which_completion_framework_do_you_use_and_why/][long discussion about completion frameworks]] in September, so
+   you can check it out for tips on choosing.
+5. [[https://github.com/oantolin/embark][Embark]] is usually mentioned as part of that group of packages, but
+   it's well worth looking into even if you use a different system. It
+   lets you choose an action based on an object, which is handy for
+   when you started with one command and then realize that you
+   actually want to do something else. For more ideas, check out
+   Karthik's post on [[https://karthinks.com/software/fifteen-ways-to-use-embark/][Fifteen Ways to Use Embark]].
+6. Now that there are Emacs Lisp bindings for tree-sitter, we can work
+   more easily with the structure of code instead of just using
+   regular expressions. You can use tree-sitter for [[https://blog.meain.io/2021/intelligent-snippets-treesitter/][intelligent
+   snippets that get information from the code around them]], [[https://github.com/polaris64/symex-ts][editing
+   Lisp expressions]], and [[https://github.com/meain/evil-textobj-tree-sitter][navigating text objects in Evil mode.]] (That's
+   when Emacs is pretending to be Vi.) Dynamic modules help us add
+   more to Emacs than Emacs Lisp easily offers, such as [[https://www.youtube.com/watch?v=KipRuiLXYEo][structural editing in OCaml]] and [[https://github.com/justinbarclay/parinfer-rust-mode#installing][using Rust to figure out parentheses and indentation for Lisp]]. If you're curious about dynamic modules,
+   check out the talk no [[https://emacsconf.org/2021/talks/rust/][Extending Emacs in Rust with Dynamic Modules]].
+7. Collaborative editing is now much easier since the [[https://elpa.gnu.org/packages/crdt.html][CRDT]] package is
+   in GNU ELPA ([[https://www.reddit.com/r/emacs/comments/pdi08v/crdtel_the_collaborative_editing_package_now_on/][Reddit]]).  It allows multiple people to edit the same
+   file over the network, using their own Emacs. This means you can
+   keep your own config and keybindings, yay! Watch the [[https://emacsconf.org/2021/talks/erg/][Emacs Research
+   Group talk]] for an example of how several people used it to work
+   together.
+8. In case you're still under the impression that Emacs is just a text
+   editor, some folks have been working on pretty neat graphical
+   experiments.
+   - These [[https://www.reddit.com/r/emacs/comments/kn3fzq/draw_anything_to_emacs_buffers_with_opengl/][OpenGL bindings for Emacs Lisp]] use an embedded xwidget,
+   - while other prototypes use the SVG support that's built into
+     Emacs for [[https://github.com/ocodo/ocodo-svg-modelines][fancy modelines]], [[https://github.com/RaminHAL9001/emacs-svg-clock][analog clocks]], [[https://github.com/Aightech/org-gantt-svg][Gantt charts]] ([[https://www.reddit.com/r/emacs/comments/prezj6/simple_gantt_chart_from_an_org_todo_list_with_svg/][Reddit]]), [[https://lifeofpenguin.blogspot.com/2021/08/scribble-notes-in-gnu-emacs.html][scribbles]], and
+     even [[https://www.reddit.com/r/emacs/comments/pvtbq5/emacs_drawing_tool/][diagrams]].  The colour-picker from that one looks
+     particularly useful if you work with CSS.
+   - If you want to play around with adding SVGs to your files and
+     interfaces, [[https://github.com/rougier/emacs-svg-icon][svg icons]] and [[https://elpa.gnu.org/packages/svg-lib.html][svglib]] might be good places to
+     start. ([[https://www.reddit.com/r/emacs/comments/pyee44/svglib_is_on_elpa/][Reddit]])
+   - Of course, there's always a place for good old-fashioned ASCII
+     art, especially with the new [[https://gitlab.com/tygrdev/boxy][boxy]] package that you can use for
+     [[https://www.reddit.com/r/emacs/comments/q2z29f/boxyheadlines_and_orgreal_are_now_on_elpa/][org files]], [[https://gitlab.com/tygrdev/boxy-imenu][imenu navigation]], and even [[https://gitlab.com/tygrdev/org-real][things in real life]].
+9. There have been a lot of great videos and livestreams about Emacs
+   this year. In addition to the ones from David Wilson of
+   SystemCrafters and Raoul Comninos of Emacs Elements, Protesilaos
+   Stavrou has started livestreaming, and John Kitchin and Mike
+   Zamansky of Using Emacs are both back, hooray!
+10. Lastly, if you want to chat with other Emacs geeks and get help on
+    Emacs, Org Mode, or other topics, the #emacs and #org-mode
+    Internet Relay Chat or IRC channels are now on the
+    [[https://libera.chat]] network instead of Freenode.
+
+If you'd like to add something I've missed, please add them to the
+collaborative pad if you're watching this live, add them to the wiki
+page, or e-mail me at [[mailto:sacha@sachachua.com][sacha@sachachua.com]] . Enjoy the rest of EmacsConf 2021!
+* Tasks
+** TODO Coordinate with johnw
+** TODO Record audio
+** TODO Collect visuals
+** TODO Put everything together
