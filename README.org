@@ -160,3 +160,208 @@ Enjoy the rest of EmacsConf 2021!
 ** TODO Record audio
 ** TODO Collect visuals
 ** TODO Put everything together
+* Code
+** STARTED Recording tool
+:PROPERTIES:
+:CREATED:  [2021-10-19 Tue 21:07]
+:Effort:   1:00
+:QUANTIFIED: Emacs
+:END:
+:LOGBOOK:
+CLOCK: [2021-10-19 Tue 23:03]
+:END:
+
+Goal:
+
+Srt or vtt file with subtitle copies so that I can easily replay segments, delete the ones I don't want to keep, and then use ffmpeg to collapse it into a smooth audio track.
+
+Interface:
+
+#+begin_src emacs-lisp
+(obs-websocket-connect)
+#+end_src
+
+#+begin_src emacs-lisp
+(defvar my-record-start nil "Start of the current recording segment in milliseconds.")
+(defvar my-record-end nil "End of current recording sgement in milliseconds.")
+(defvar my-record-caption nil "Current caption.")
+(defvar my-record-segments-buffer "*Segments*" "Buffer with the segments.")
+(defvar my-record-paused nil "If non-nil, recording is currently paused.")
+(defun my-record-current-caption ()
+  (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+(defun my-record-send-caption ()
+  (setq my-record-caption (my-record-current-caption))
+  (obs-websocket-send "SendCaptions" :text (my-record-current-caption)))
+(defun my-record-set-start ()
+  (setq my-record-start (my-obs-websocket-recording-time-msecs)))
+(defun my-record-cancel-segment ()
+  "Reset the start of the current segment and ignore the previous recording."
+  (interactive)
+  (my-record-set-start)
+  (setq my-record-end nil)
+  (my-record-send-caption))
+
+(defun my-record-save-segment ()
+  "Save the current segment in the target file."
+  (when my-record-start
+    (with-current-buffer (get-buffer-create my-record-segments-buffer)
+      (goto-char (point-max))
+      (setq my-record-end (or my-record-end (my-obs-websocket-recording-time-msecs)))
+      (insert "\n\nNOTE: " obs-websocket-recording-filename "\n"
+              (my-msecs-to-timestamp my-record-start) " --> " (my-msecs-to-timestamp my-record-end) "\n"
+              my-record-caption "\n")
+      (setq my-record-end nil)
+      (my-record-set-start)
+      (my-scroll-buffer-to-bottom (current-buffer)))))
+
+(defun my-scroll-buffer-to-bottom (&optional buffer)
+  "Scroll buffer to bottom in all its windows."
+  (let ((windows (get-buffer-window-list (or buffer (current-buffer)) t t)))
+    (dolist (window windows)
+      (set-window-point window (point-max)))))
+
+(defun my-record-retry-segment ()
+  "Unpause if needed, copy segment to the other window, and set the beginning time."
+  (interactive)
+  (my-record-save-segment)
+  (my-record-set-start)
+  (my-record-send-caption))
+
+;; RET Accept segment and move to next one: set end of segment, copy to other side, highlight next segment to say, unpause if needed
+;; backspace Cancel segment: reset the start of the current segment, display feedback
+;; Left arrow Retry segment: unpause if needed, copy segment to the other window, set beginning time
+;; Space Pause recording: use this as the end time; pause recording
+;; q Stop recording: accept current segment and then stop
+;; Up, down Go to previous or next subtitle: 
+;; Ins Edit: cancel segment, stop recording
+
+(defun my-record-previous-segment ()
+  "Cancel segment, set new beginning time, move forward."
+  (interactive)
+  (forward-line -1)
+  (my-record-cancel-segment))
+
+(defun my-record-next-segment ()
+  "Cancel segment, set new beginning time, move forward."
+  (interactive)
+  (forward-line 1)
+  (my-record-cancel-segment))
+
+(defun my-record-stop ()
+  "Finish recording."
+  (interactive)
+  (my-record-save-segment)
+  (obs-websocket-send "StopRecording"))
+
+;; (defun my-record-pause ()
+;;   "Toggle recording."
+;;   (interactive)
+;;   (if my-record-paused
+;;       (obs-websocket-send "ResumeRecording")
+;;     (obs-websocket-send "PauseRecording")
+;;     (setq my-record-end (my-obs-websocket-recording-time-msecs)))
+;;   (setq my-record-paused (null my-record-paused))
+;;   nil)
+
+;; (defun my-record-edit ()
+;;   "SomeDocs"
+;;   (interactive)
+;;   nil)
+
+(defun my-record-accept-segment ()
+  "Accept segment and move to next one: set end of segment, copy to other side, highlight next segment to say."
+  (interactive)
+  (my-record-save-segment)
+  (forward-line 1)
+  (my-record-send-caption))
+
+(defun my-record-setup ()
+  (interactive)
+  (unless (websocket-openp obs-websocket)
+    (obs-websocket-connect))
+  (delete-other-windows)
+  (display-buffer (get-buffer-create my-record-segments-buffer))
+  (obs-websocket-send "StartRecording")
+  (my-record-retry-segment)
+  (my-record/body))
+
+(defhydra my-record (:exit nil)
+  ("SPC" my-stream-toggle-recording (format "Recording [%s]" (if obs-websocket-recording-p "X" " ")))
+  ("RET" my-record-accept-segment "Accept")
+  ("<backspace>" my-record-cancel-segment "Cancel")
+  ("<left>" my-record-retry-segment "Retry")
+  ("<up>" my-record-previous-segment "Previous")
+  ("<down>" my-record-next-segment "Next")
+  ("q" my-record-stop "Stop" :exit t)
+  ;; ("SPC" my-record-pause "Pause")
+  ;; ("<insert>" my-record-edit "Edit" :exit t)
+  )
+#+end_src
+
+Split window; left side has the script, right has the notes I'm making
+Vtt format
+NOTE filename
+Start end
+Text
+
+Start recording: start OBS recording
+RET Accept segment and move to next one: set end of segment, copy to other side, highlight next segment to say, unpause if needed
+backspace Cancel segment: reset the start of the current segment, display feedback
+Left arrow Retry segment: unpause if needed, copy segment to the other window, set beginning time
+Space Pause recording: use this as the end time; pause recording
+q Stop recording: accept current segment and then stop
+Up, down Go to previous or next subtitle: cancel segment, set new beginning time
+Ins Edit: cancel segment, stop recording
+
+And then afterwards, use subed to play back different options
+
+And then write a tool that will take the vtt and spit out the right ffmpeg command to process the webm with a black screen, audio, and subtitles, and a vtt file that's also trimmed.
+
+And then take the images and drop them in
+
+#+begin_src emacs-lisp
+(require 'subed-vtt)
+(defun my-record-get-selection-for-region (beg end)
+  (interactive "r")
+  (goto-char beg)
+  (string-join
+   (cl-loop
+    while (re-search-forward "\\(.*?\\) --> \\(.*?\\)\n" end t)
+    collect
+    (let* ((start (match-string 1))
+           (end (match-string 2))
+           (start-ts (/ (subed-vtt--timestamp-to-msecs start) 1000.0))
+           (end-ts (/ (subed-vtt--timestamp-to-msecs end) 1000.0)))
+      (format "between(t,%0.2f,%0.2f)" start-ts end-ts)))
+   "+"))
+(defun my-record-compose-audio (&optional beg end)
+  (interactive "r")
+  (setq beg (or beg (point-min))
+        end (or end (point-max)))
+  (let (selection (file my-record-recording) result)
+    (with-current-buffer my-record-segments-buffer
+      (goto-char (point-min))
+      (setq selection (my-record-get-selection-for-region beg end)))
+    (setq result
+          (format "ffmpeg -y -i %s -af \"aselect='%s',asetpts=N/SR/TB\" -vn -acodec libvorbis %s"
+                  (shell-quote-argument file)
+                  selection
+                  "output.ogg"))
+    (kill-new result)
+    result))
+
+(defun my-record-try-flow (&optional beg end)
+  (interactive (list (if (region-active-p) (min (point) (mark)) (point-min))
+                     (if (region-active-p) (max (point) (mark)) (point-max))
+                     ))
+  (save-excursion
+    (shell-command (my-record-compose-audio beg
+                                            end))
+    (mpv-play "output.ogg")))
+(my-record-compose-audio)
+#+end_src
+
+#+RESULTS:
+:results:
+ffmpeg -i /home/sacha/recordings/2021-10-20\ 00-11-38.mkv -af "aselect='between(t,4.47,8.52)+between(t,8.52,10.30)+between(t,10.30,12.14)+between(t,12.14,14.57)+between(t,21.00,26.52)+between(t,26.52,26.09)+between(t,31.78,34.02)+between(t,34.02,36.06)+between(t,38.71,40.13)+between(t,40.13,42.02)+between(t,42.02,44.92)+between(t,57.02,59.39)+between(t,59.39,61.77)+between(t,61.77,64.61)+between(t,64.61,66.11)+between(t,66.11,70.79)+between(t,70.79,71.44)+between(t,71.44,74.75)+between(t,74.75,76.63)+between(t,76.63,78.01)+between(t,78.01,80.22)+between(t,80.22,81.17)+between(t,81.18,83.07)+between(t,83.07,85.95)+between(t,85.95,88.51)+between(t,88.51,90.39)+between(t,101.84,103.16)+between(t,105.85,107.25)+between(t,107.25,110.92)+between(t,110.92,113.52)+between(t,119.52,123.75)+between(t,123.75,125.35)+between(t,125.35,128.66)+between(t,128.66,130.22)+between(t,130.22,133.21)+between(t,133.21,136.59)+between(t,136.59,137.69)+between(t,137.69,139.15)+between(t,139.15,141.78)+between(t,141.78,144.62)+between(t,144.62,148.75)+between(t,148.75,150.72)+between(t,150.72,151.46)+between(t,155.70,158.61)+between(t,158.61,159.09)+between(t,159.09,161.92)+between(t,161.92,162.38)+between(t,162.38,164.13)+between(t,164.13,167.77)+between(t,167.77,168.19)+between(t,168.20,169.49)+between(t,169.49,171.80)+between(t,171.80,172.44)+between(t,172.44,174.24)+between(t,174.24,176.96)+between(t,182.56,185.48)+between(t,192.15,195.22)+between(t,195.22,197.52)+between(t,197.52,198.29)+between(t,198.29,200.35)+between(t,200.35,202.20)+between(t,202.20,204.46)+between(t,204.46,206.27)+between(t,206.27,207.93)+between(t,207.93,209.85)+between(t,209.85,210.47)+between(t,210.47,212.30)+between(t,212.31,215.12)+between(t,215.13,218.77)+between(t,218.77,220.75)+between(t,220.75,222.70)+between(t,222.70,223.50)+between(t,223.50,226.93)+between(t,226.94,227.73)+between(t,227.73,229.72)+between(t,229.72,231.97)+between(t,231.97,233.45)+between(t,233.45,237.69)+between(t,237.70,239.91)+between(t,239.91,241.97)+between(t,241.97,245.52)+between(t,245.52,246.55)+between(t,246.55,248.61)+between(t,248.61,249.72)+between(t,249.72,251.18)+between(t,251.18,255.93)+between(t,259.52,261.39)+between(t,264.02,266.37)+between(t,266.37,268.95)+between(t,268.95,269.42)+between(t,269.42,272.11)+between(t,272.11,273.31)+between(t,273.31,276.05)+between(t,276.05,278.72)+between(t,278.72,279.20)+between(t,281.79,284.74)+between(t,284.74,286.05)+between(t,286.05,287.35)+between(t,287.35,290.69)+between(t,290.69,292.28)',asetpts=N/SR/TB" -vn -acodec libvorbis output.ogg
+:end:
