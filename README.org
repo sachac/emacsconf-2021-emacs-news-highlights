@@ -10,8 +10,8 @@
 Draft of my talk for EmacsConf 2021
 
 * Talk plans
-I'm Sacha Chua, and here are ten
-Emacs News highlights for 2021.
+I'm Sacha Chua, and here are 
+ten Emacs News highlights for 2021.
 If you want to follow the links,
 check out the wiki page at
 https://emacsconf.org/2021/talks/news/ .
@@ -134,7 +134,7 @@ https://emacsconf.org/2021/talks/news/ .
    and livestreams about Emacs this year. 
    In addition to the ones from [[https://systemcrafters.cc/][System Crafters]],
    [[https://www.youtube.com/channel/UCe5excZqMeG1CIW-YhMTCEQ][Emacs Elements]], 
-   and [[https://protesilaos.com/][Protesilaos Stavrou]] 
+   and [[https://protesilaos.com/][Protesilaos]] 
    (who has started livestreaming), 
    [[https://www.youtube.com/user/jrkitchin][John Kitchin]] 
    and [[https://cestlaz.github.io/categories/emacs/][Mike Zamansky]] 
