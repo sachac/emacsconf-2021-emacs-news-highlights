@@ -34,17 +34,13 @@ https://emacsconf.org/2021/talks/news/ .
    #+CAPTION: Native compilation featured on System Crafters
    [[file:images/Screenshot_20211020_095812.png]]
    
-   Native compilation should
+   [[https://www.youtube.com/watch?v=i8OLg-f9EHk][Native compilation]] should
    make everything way faster,
 
-   #+CAPTION: Emoji in NEWS.28
-   [[file:images/Screenshot_20211020_100456.png]]
+   #+CAPTION: Emoji support
+   [[file:images/EmacslZhRzr.svg]]
 
    and emoji support will probably
-
-   #+CAPTION: Emoji character script
-   [[file:images/Screenshot_20211020_100414.png]]
-
    make things more fun. 😎👍
    
    John Wiegley will share more Emacs 28 details
@@ -224,6 +220,7 @@ https://emacsconf.org/2021/talks/news/ .
    #+CAPTION: Gantt charts
    [[file:images/Screenshot_20211020_214059.png]]
    for [[https://github.com/Aightech/org-gantt-svg][Gantt charts]] ([[https://www.reddit.com/r/emacs/comments/prezj6/simple_gantt_chart_from_an_org_todo_list_with_svg/][Reddit]]),
+
    #+CAPTION: Scribble
    [[file:images/scribble.png]]
    [[https://lifeofpenguin.blogspot.com/2021/08/scribble-notes-in-gnu-emacs.html][scribbles]],
@@ -490,8 +487,128 @@ CLOCK: [2021-10-20 Wed 09:48]
 :END:
 ** TODO Rerecord audio
 ** TODO Figure out how to stitch visuals together
+
+ffmpeg?
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+#+RESULTS:
+:results:
+my-talk-with-script
+:end:
+
+Actually, I'd like to get these out of the vtt as well, so I can determine timing.
+
+#+begin_src emacs-lisp
+(defmacro my-talk-with-script (&rest body)
+  (declare (debug t))
+  `(with-current-buffer my-record-script-buffer
+     (save-restriction
+       (save-excursion
+         (goto-char (org-find-exact-headline-in-buffer my-talk-script-heading))
+         (narrow-to-region (save-excursion (org-end-of-meta-data) (point)) (save-excursion (org-end-of-subtree)))
+         ,@body))))
+
+(defun my-record-segment-get-video-duration-ms (filename)
+  (* 1000
+     (string-to-number
+      (shell-command-to-string
+       (concat "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "
+               (shell-quote-argument (expand-file-name filename)))))))
+
+(defun my-record-segment-get-frames (filename)
+  (string-to-number
+   (shell-command-to-string
+    (concat "ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "
+            (shell-quote-argument (expand-file-name filename))))))
+
+(defun my-record-format-selection-as-visuals (selection)
+  (let ((info
+         (seq-map-indexed
+          (lambda (o i)
+            (seq-let (start-ms end-ms caption) o
+              (when (string-match "file:\\([^]]+\\)" caption)
+                (let ((filename (match-string 1 caption))
+                      (duration (- end-ms start-ms)))
+                  (cond
+                   ((string-match "mp4" caption)
+                    (list
+                     (format "-i %s" filename)
+                     (let ((video-duration (my-record-segment-get-video-duration-ms filename)))
+                       (format "[%d:v]setpts=PTS*%.3f,scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];"
+                               i
+                               (/ duration video-duration)
+                               i))))
+                   ((string-match "gif$" filename)
+                    (let ((gif-frames (my-record-segment-get-frames filename)))
+                      (list
+                       ;; (format "-f image2 -r %0.3f -i %s" (/ (/ duration 1000.0) gif-frames) filename)
+                       (format "-i %s" filename)
+                       (format "[%d:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];" i i))))
+                   (t
+                    (list
+                     (format "-loop 1 -t %0.3f -i %s"
+                             (/ duration 1000.0)
+                             (shell-quote-argument filename))
+                     (format "[%d:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];" i i))))))))
+          selection)))
+    (concat
+     (mapconcat 'car info " ")
+     " -filter_complex \""
+     (mapconcat 'cadr info "")
+     (mapconcat
+      (lambda (o) (format "[r%d]" o))
+      (number-sequence 0 (1- (length selection)))
+      "")
+     (format "concat=n=%d:v=1:a=0\"" (length selection)))))
+(defun my-record-compile-visuals ()
+  (interactive)
+  (let ((result
+         (concat "ffmpeg -y "
+                 (with-current-buffer my-record-segments-buffer
+                   (my-record-format-selection-as-visuals (my-record-get-selection-for-region (point-min) (point-max))))
+                 " -shortest -c:v vp8 -vsync 1 -b:v 800k visuals.webm")))
+    (kill-new result)
+    result))
+(defun my-record-test-visuals ()
+  (interactive)
+  (let ((result
+         (concat "ffmpeg -y "
+                 (with-current-buffer my-record-segments-buffer
+                   (my-record-format-selection-as-visuals
+                    (seq-take
+                     (my-talk-with-script
+                      (cl-loop
+                       while (re-search-forward "\\[\\[file:\\([^]]+\\)\\]" nil t)
+                       collect (list 1000 2000 (match-string-no-properties 0))
+                       )
+                      )
+                     10)
+                    ))
+                 " -shortest -c:v vp8 -vsync 2 -b:v 800k visuals.webm")))
+    (kill-new result)
+    result)
+  )
+(my-record-compile-visuals)
+#+end_src
+
+#+RESULTS:
+:results:
+ffmpeg -y -loop 1 -t 0.695 -i images/Screenshot_20211020_095333.png -loop 1 -t 1.723 -i images/Screenshot_20211020_095812.png -loop 1 -t 4.000 -i images/EmacslZhRzr.svg -filter_complex "[0:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r0];[1:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r1];[2:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r2];[r0][r1][r2]concat=n=3:v=1:a=0" -shortest -c:v vp8 -vsync 1 -b:v 800k visuals.webm
+:end:
+*** TODO handle animated gifs
+https://unix.stackexchange.com/questions/40638/how-to-do-i-convert-an-animated-gif-to-an-mp4-or-mv4-on-the-command-line
+*** TODO squeeze videos to fit
+** TODO Figure out what to do about resolution
+1366x768,
+wanted 1280x720,
+my images are small
+
 ** TODO Tweak audio editing
-** TODO Put everything together
+** TODO Tweak caption timing and include it
+** TODO Put everything together and send the video
 * Code
 ** STARTED Recording tool
 :PROPERTIES:
@@ -514,7 +631,7 @@ Interface:
 #+end_src
 
 #+begin_src emacs-lisp
-(defvar my-record-backend 'sox "Either 'sox or 'obs.")
+(defvar my-record-backend nil "Either 'sox, 'obs, or nil.")
 (defvar my-record-frontend 'hydra "Either 'hydra or 'web.")
 (defvar my-record-directory "~/recordings")
 (defvar my-record-audio-extension ".wav")
@@ -529,17 +646,19 @@ Interface:
 (defvar my-record-sox-executable "rec")
 (defvar my-record-sox-channels 1)
 (defvar my-record-sox-rate 16000)
-(defvar my-record-sox-start-time nil "Emacs timestamp from when the sox process was started.")
+(defvar my-record-start-time nil "Emacs timestamp from when the sox process was started.")
 (defvar my-record-sox-filename nil)
 
 (defun my-record-current-filename ()
   (cond
    ((eq my-record-backend 'obs) obs-websocket-recording-filename)
-   ((eq my-record-backend 'sox) my-record-sox-filename)))
+   ((eq my-record-backend 'sox) my-record-sox-filename)
+   (t "")))
 (defun my-record-offset-ms ()
   (cond
    ((eq my-record-backend 'obs) (my-obs-websocket-recording-time-msecs))
-   ((eq my-record-backend 'sox) (* (float-time (time-subtract (current-time) my-record-sox-start-time)) 1000.0))))
+   (t (* (float-time (time-subtract (current-time) my-record-start-time)) 1000.0)))) ; sox or nil
+   
 
 (defun my-record-sox-start ()
   (interactive)
@@ -561,7 +680,7 @@ Interface:
          "-c"
          (number-to-string my-record-sox-channels)
          my-record-sox-filename))
-  (setq my-record-sox-start-time (current-time)))
+  (setq my-record-start-time (current-time)))
 
 (defun my-record-current-caption ()
   (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
@@ -630,7 +749,7 @@ Interface:
   (my-record-save-segment)
   (cond
    ((eq my-record-backend 'sox)
-   (when (process-live-p my-record-sox-process) (quit-process my-record-sox-process)))
+    (when (process-live-p my-record-sox-process) (quit-process my-record-sox-process)))
    ((eq my-record-backend 'obs)
     (obs-websocket-send "StopRecording"))))
 
@@ -656,14 +775,18 @@ Interface:
   (forward-line 1)
   (my-record-send-caption))
 
-(defun my-record-setup ()
-  (interactive)
+(defun my-record-setup (filename)
+  (interactive "FSegment VTT: ")
+  (setq my-record-segments-buffer (find-file-noselect filename))
   (delete-other-windows)
+  (setq my-record-script-buffer (current-buffer))
   (display-buffer (get-buffer-create my-record-segments-buffer))
-  (text-scale-set 4)
+  (if my-record-backend (text-scale-set 4))
+  (setq my-record-start-time (current-time))
   ;; (my-record-minor-mode 1)
   (my-record-start)
   (my-record-retry-segment)
+
   ;; (my-record/body)
   )
 
@@ -697,26 +820,21 @@ Interface:
 ;;     (beginning-of-line)
 ;;     (my-record-send-caption)))
 
-;; (define-minor-mode my-record-minor-mode ()
-;;   "Record audio and associate with lines from the current file."
-;;   nil
-;;   :lighter "rec"
-;;   :global nil
-;;   :keymap
-;;   '(([mouse-1] . my-record-select-line)
-;;     ([mouse-2] . my-record-select-line)
-;;     (" " . my-record-minor-mode))
-;;   (if my-record-minor-mode
-;;   (progn
-;;     (fundamental-mode)
-;;     (text-scale-set 4)
-;;     (message "Now recording..."))
-  
-;;   (progn
-;;     (org-mode)
-;;     (my-record-stop)
-;;     (text-scale-set 0)
-;;     (message "Stopped recording."))))
+(defvar my-record-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c") 'my-record-mode)))
+
+(define-minor-mode my-record-mode ()
+  "Record audio and associate with lines from the current file."
+  nil
+  :lighter "rec"
+  :global nil
+  (if my-record-minor-mode
+      (progn
+        (message "Now recording..."))
+    (progn
+      (my-record-stop)
+      (message "Stopped recording."))))
 #+end_src
 
 #+RESULTS:
@@ -768,11 +886,11 @@ And then take the images and drop them in
   (interactive "r")
   (goto-char beg)
   (cl-loop
-   while (re-search-forward "\\(.*?\\) --> \\(.*?\\)\n\\(.*\\)\n\n" end t)
+   while (re-search-forward "\\(.*?\\) --> \\(.*?\\)\n\\(.*\\)\n\n*" end t)
    collect
    (let* ((start (match-string 1))
           (end (match-string 2))
-          (caption (match-string 3))
+          (caption (match-string-no-properties 3))
           (start-ms (subed-vtt--timestamp-to-msecs start))
           (end-ms (subed-vtt--timestamp-to-msecs end)))
      (list start-ms end-ms caption))))
@@ -786,7 +904,7 @@ And then take the images and drop them in
                  (setq beg (point-min) end (point-max)))
                (my-record-format-as-audacity-labels
                 (my-record-get-selection-for-region beg end)))))))
-
+(defvar my-record-recording nil "File to split up.")
 (defun my-record-compose-audio (&optional beg end)
   (interactive "r")
   (setq beg (or beg (point-min))
@@ -811,12 +929,11 @@ And then take the images and drop them in
     (shell-command (my-record-compose-audio beg
                                             end))
     (mpv-play "output.ogg")))
-(my-record-compose-audio)
 #+end_src
 
 #+RESULTS:
 :results:
-ffmpeg -i /home/sacha/recordings/2021-10-20\ 00-11-38.mkv -af "aselect='between(t,4.47,8.52)+between(t,8.52,10.30)+between(t,10.30,12.14)+between(t,12.14,14.57)+between(t,21.00,26.52)+between(t,26.52,26.09)+between(t,31.78,34.02)+between(t,34.02,36.06)+between(t,38.71,40.13)+between(t,40.13,42.02)+between(t,42.02,44.92)+between(t,57.02,59.39)+between(t,59.39,61.77)+between(t,61.77,64.61)+between(t,64.61,66.11)+between(t,66.11,70.79)+between(t,70.79,71.44)+between(t,71.44,74.75)+between(t,74.75,76.63)+between(t,76.63,78.01)+between(t,78.01,80.22)+between(t,80.22,81.17)+between(t,81.18,83.07)+between(t,83.07,85.95)+between(t,85.95,88.51)+between(t,88.51,90.39)+between(t,101.84,103.16)+between(t,105.85,107.25)+between(t,107.25,110.92)+between(t,110.92,113.52)+between(t,119.52,123.75)+between(t,123.75,125.35)+between(t,125.35,128.66)+between(t,128.66,130.22)+between(t,130.22,133.21)+between(t,133.21,136.59)+between(t,136.59,137.69)+between(t,137.69,139.15)+between(t,139.15,141.78)+between(t,141.78,144.62)+between(t,144.62,148.75)+between(t,148.75,150.72)+between(t,150.72,151.46)+between(t,155.70,158.61)+between(t,158.61,159.09)+between(t,159.09,161.92)+between(t,161.92,162.38)+between(t,162.38,164.13)+between(t,164.13,167.77)+between(t,167.77,168.19)+between(t,168.20,169.49)+between(t,169.49,171.80)+between(t,171.80,172.44)+between(t,172.44,174.24)+between(t,174.24,176.96)+between(t,182.56,185.48)+between(t,192.15,195.22)+between(t,195.22,197.52)+between(t,197.52,198.29)+between(t,198.29,200.35)+between(t,200.35,202.20)+between(t,202.20,204.46)+between(t,204.46,206.27)+between(t,206.27,207.93)+between(t,207.93,209.85)+between(t,209.85,210.47)+between(t,210.47,212.30)+between(t,212.31,215.12)+between(t,215.13,218.77)+between(t,218.77,220.75)+between(t,220.75,222.70)+between(t,222.70,223.50)+between(t,223.50,226.93)+between(t,226.94,227.73)+between(t,227.73,229.72)+between(t,229.72,231.97)+between(t,231.97,233.45)+between(t,233.45,237.69)+between(t,237.70,239.91)+between(t,239.91,241.97)+between(t,241.97,245.52)+between(t,245.52,246.55)+between(t,246.55,248.61)+between(t,248.61,249.72)+between(t,249.72,251.18)+between(t,251.18,255.93)+between(t,259.52,261.39)+between(t,264.02,266.37)+between(t,266.37,268.95)+between(t,268.95,269.42)+between(t,269.42,272.11)+between(t,272.11,273.31)+between(t,273.31,276.05)+between(t,276.05,278.72)+between(t,278.72,279.20)+between(t,281.79,284.74)+between(t,284.74,286.05)+between(t,286.05,287.35)+between(t,287.35,290.69)+between(t,290.69,292.28)',asetpts=N/SR/TB" -vn -acodec libvorbis output.ogg
+my-record-try-flow
 :end:
 
 #+begin_export html
@@ -846,7 +963,7 @@ img { filter: drop-shadow(0 0.2rem 0.25rem rgba(0, 0, 0, 0.2)); display: block; 
  .controller { height: 100%; display: flex; flex-direction: column }
  button { flex-grow: 1; font-size: 70px } 
 </style>"))
-(defvar my-record-script-buffer (current-buffer))
+(defvar my-record-script-buffer nil)
 (defservlet previous application/json ()
   (with-current-buffer my-record-script-buffer
    (my-record-previous-segment))
@@ -888,6 +1005,33 @@ httpd/next
             (insert (org-link-make-string (concat "file:" (file-relative-name filename "."))))))))))
           
 #+end_src
+
+#+RESULTS:
+:results:
+my-talk-copy-assets-to-subdir
+:end:
+
+** Emoji support
+(set-fontset-font "fontset-default" 'symbol "Noto Color Emoji" nil 'prepend)
+** SVG screenshots
+#+begin_src emacs-lisp
+(defun screenshot-svg ()
+  "Save a screenshot of the current frame as an SVG image.
+Saves to a temp file and puts the filename in the kill ring."
+  (interactive)
+  (let* ((data (x-export-frames nil 'svg))
+         (filename (expand-file-name (format-time-string "%Y-%m-%d-%H%M%S.svg") my-screenshot-directory)))
+    (with-temp-file filename 
+      (insert data))
+    (kill-new filename)
+    (message filename)))
+    #+end_src
+
+    #+RESULTS:
+    :results:
+    screenshot-svg
+    :end:
+
 * Image credits and sources
 
 - async-python-demo: https://blog.tecosaur.com/tmio/2021-05-31-async.html
