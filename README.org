@@ -1,4 +1,5 @@
 #+TITLE: Emacs News Highlights
+#+OPTIONS: toc:1
 
 | Talk page            | https://emacsconf.org/2021/talks/news            |
 | Contact              | Sacha Chua [[mailto:sacha@sachachua.com][sacha@sachachua.com]]                             |
