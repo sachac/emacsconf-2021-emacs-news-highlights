@@ -544,8 +544,8 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
                    ((string-match "gif$" filename)
                     (let ((gif-frames (my-record-segment-get-frames filename)))
                       (list
-                       ;; (format "-f image2 -r %0.3f -i %s" (/ (/ duration 1000.0) gif-frames) filename)
-                       (format "-i %s" filename)
+                       (format "-r %0.3f -i %s" (/ gif-frames (/ duration 1000.0)) filename)
+                       ;; (format "-i %s" filename)
                        (format "[%d:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];" i i))))
                    (t
                     (list
@@ -578,19 +578,13 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
          (concat "ffmpeg -y "
                  (with-current-buffer my-record-segments-buffer
                    (my-record-format-selection-as-visuals
-                    (seq-take
-                     (my-talk-with-script
-                      (cl-loop
-                       while (re-search-forward "\\[\\[file:\\([^]]+\\)\\]" nil t)
-                       collect (list 1000 2000 (match-string-no-properties 0))
-                       )
-                      )
-                     10)
-                    ))
+                    (my-talk-with-script
+                     (cl-loop
+                      while (re-search-forward "\\[\\[file:\\([^]]+\\)\\]" nil t)
+                      collect (list 1000 2000 (match-string-no-properties 0))))))
                  " -shortest -c:v vp8 -vsync 2 -b:v 800k visuals.webm")))
     (kill-new result)
-    result)
-  )
+    result))
 (my-record-compile-visuals)
 #+end_src
 
