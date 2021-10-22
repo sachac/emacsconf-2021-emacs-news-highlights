@@ -1,7 +1,7 @@
 #+TITLE: Emacs News Highlights
 #+OPTIONS: toc:1
 
-| Talk page            | https://emacsconf.org/2021/talks/news            |
+| Talk page            | https://emacsconf.org/2021/talks/news            |rt
 | Contact              | Sacha Chua [[mailto:sacha@sachachua.com][sacha@sachachua.com]]                             |
 # | Video with subtitles | [[file:emacs-conf-2020-emacs-news-highlights-sacha-chua.webm]] |
 # | Audio only           | [[file:audio.ogg]]                                             |
@@ -15,7 +15,7 @@ Draft of my talk for EmacsConf 2021
 :CUSTOM_ID: script
 :END:
 
-#+CAPTION: Emacs News Highlights
+#+CAPTION: Emacs News Highlights - emacsconf.org/2021/talks/news
 [[file:images/Screenshot_20211021_002952.png]] 
 
 I'm Sacha Chua, and here are 
@@ -24,14 +24,14 @@ If you want to follow the links,
 check out the wiki page at
 https://emacsconf.org/2021/talks/news/ .
 
-#+CAPTION: Emacs NEWS.28
+#+CAPTION: 1. Emacs NEWS.28 - git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS.28
 [[file:images/Screenshot_20211020_095333.png]]
 
 1. The Emacs developers are currently
    working on [[https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS.28][Emacs 28.1]],
    which will be the next major release.
 
-   #+CAPTION: Native compilation featured on System Crafters
+   #+CAPTION: Native compilation featured on System Crafters, www.youtube.com/watch?v=i8OLg-f9EHk
    [[file:images/Screenshot_20211020_095812.png]]
    
    [[https://www.youtube.com/watch?v=i8OLg-f9EHk][Native compilation]] should
@@ -46,25 +46,27 @@ https://emacsconf.org/2021/talks/news/ .
    John Wiegley will share more Emacs 28 details
    in his update, so check out his talk.
 
-   #+CAPTION: Org Mode 9.5
+2.
+   #+CAPTION: 2. Org Mode 9.5 - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_100623.png]]
 
-2. [[https://orgmode.org/Changes.html][Org Mode is now at version 9.5]].
+   [[https://orgmode.org/Changes.html][Org Mode is now at version 9.5]].
    New features include
    a library for [[https://blog.tecosaur.com/tmio/2021-07-31-citations.html#fn.3][managing citations]],
-   
+
+   #+CAPTION: asynchronous session support in Python - blog.tecosaur.com/tmio/2021-05-31-async.html
    [[file:images/org-async-python-demo.mp4]]
    
    [[https://blog.tecosaur.com/tmio/2021-05-31-async.html][asynchronous session support]]
    for code blocks,
 
-   #+CAPTION: New faces for agenda
+   #+CAPTION: New faces for agenda - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_101636.png]]
 
    and better control
    of your [[https://orgmode.org/Changes.html][agenda's appearance]].
    
-   #+CAPTION: Org Mode 9.5
+   #+CAPTION: Org Mode 9.5 - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_100623.png]]
    If you've been getting your Org packages
    from Org ELPA,
@@ -72,14 +74,14 @@ https://emacsconf.org/2021/talks/news/ .
    to get Org from GNU ELPA
    and org-contrib from NonGNU ELPA.
 
-   #+CAPTION: Org Roam v2
+   #+CAPTION: Org Roam v2 - blog.jethro.dev/posts/org_roam_v2/
    [[file:images/Screenshot_20211020_101756.png]]
 
    The [[https://blog.jethro.dev/posts/org_roam_v2/][new release of the Org Roam package]] ([[https://blog.tecosaur.com/tmio/2021-08-38-roaming.html][TMIO]])
    should be a faster and more consistent way
    to use Org to manage a knowledgebase,
 
-   #+CAPTION: Org Roam UI
+   #+CAPTION: Org Roam UI - github.com/org-roam/org-roam-ui/
    [[file:images/org-roam-ui.png]]
    
    and [[https://github.com/org-roam/org-roam-ui/][org-roam-ui]] looks pretty snazzy.
@@ -91,30 +93,34 @@ https://emacsconf.org/2021/talks/news/ .
    is to check out the blog [[https://blog.tecosaur.com/tmio/][This Month in Org]].
 
 3.
-   #+CAPTION: Magit 3.0.0 release notes
+   #+CAPTION: 3. Magit 3 - emacsair.me/2021/05/25/magit-3.0/
    [[file:images/Screenshot_20211020_102028.png]]
 
-   New [[https://emacsair.me/2021/05/25/magit-3.0/][Magit major release]], now version 3.3.
+   New [[https://emacsair.me/2021/05/25/magit-3.0/][Magit major release]]!
    Jonas Bernoulli has split some functionality
    into other packages so that
    Emacs Lisp developers can use them, such as
    magit-section, transient, and forge.
 
-   #+CAPTION: (and Bufler Taxy Magit-Section)
+   #+CAPTION: (and Bufler Taxy Magit-Section) - www.reddit.com/r/emacs/comments/pkuwcq
    [[file:images/Screenshot_20211020_102147.png]]
 
    Here's an example of using magit-section to
    [[https://www.reddit.com/r/emacs/comments/pkuwcq/and_bufler_taxy_magitsection_a_concise_language/][manage groups of buffers]].
 
-   #+CAPTION: Self-describing Smart DSLs
+   #+CAPTION: Self-describing Smart DSLs - emacsconf.org/2021/talks/dsl/
    [[file:images/Screenshot_20211020_102242.png]]
 
    You can learn more about Transient
    in the talk on [[https://emacsconf.org/2021/talks/dsl/][self-describing 
    smart domain-specific languages]] or DSLs.
    
-4. In terms of smaller packages, there's been
+4. 
+   #+CAPTION: 4. Completion - karthinks.com/software/avy-can-do-anything/
+   [[file:images/minibuffer-interaction-paradigm.png]]
+   In terms of smaller packages, there's been
    a lot of activity around completion.
+   [[https://karthinks.com/software/avy-can-do-anything/][Karthik has this great diagram.]]
    I think the idea is that instead of having
    one large completion system
    like Helm or Icicles, you can choose
@@ -123,31 +129,31 @@ https://emacsconf.org/2021/talks/news/ .
    If you're curious about this, 
    you might start with either
      
-     #+CAPTION: selectrum
+     #+CAPTION: selectrum - github.com/raxod502/selectrum
      [[file:images/Screenshot_20211020_204634.png]]
      [[https://github.com/raxod502/selectrum][selectrum]] 
-     #+CAPTION: Vertico
+     #+CAPTION: Vertico - github.com/minad/vertico
      [[file:images/vertico.svg]]
      or [[https://github.com/minad/vertico][vertico]],
      which are both completion interfaces,
 
-     #+CAPTION: marginalia
+     #+CAPTION: marginalia - github.com/minad/marginalia
      [[file:images/Screenshot_20211020_212130.png]]
-     add [[https://github.com/minad/marginalia][marginalia]] for more information
+     add [[https://github.com/minad/marginalia][marginalia]] for more information,
         
-     #+CAPTION: consult
+     #+CAPTION: consult - github.com/minad/consult
      [[file:images/consult-grep.gif]]
      and try [[https://github.com/minad/consult][consult]] for many useful
      completing commands.
      
-   #+CAPTION: Discussion on completion frameworks
+   #+CAPTION: On completion frameworks - www.reddit.com/r/emacs/comments/ppg98f
    [[file:images/Screenshot_20211020_212308.png]]
 
    There are so many options, 
    so it might be useful to check out
    [[https://www.reddit.com/r/emacs/comments/ppg98f/which_completion_framework_do_you_use_and_why/][some discussions]].
 5. 
-   #+CAPTION: Embark
+   #+CAPTION: 5. Embark - github.com/oantolin/embark
    [[file:images/Screenshot_20211020_212456.png]]
    [[https://github.com/oantolin/embark][Embark]] is usually mentioned as part of  
    that group of packages, 
@@ -158,42 +164,49 @@ https://emacsconf.org/2021/talks/news/ .
    when you start with one command 
    and then realize that 
    you actually want to do something else. 
-   #+CAPTION: Fifteen ways to use Embark
+   #+CAPTION: Fifteen ways to use Embark - karthinks.com/software/fifteen-ways-to-use-embark/
    [[file:images/Screenshot_20211020_212529.png]]
    For more ideas, check out 
    [[https://karthinks.com/software/fifteen-ways-to-use-embark/][Fifteen Ways to Use Embark]].
-6. Now that there are Emacs Lisp bindings 
+   
+6. 
+   #+CAPTION: Tree-sitter-powered editing - https://emacsconf.org/2021/talks/structural/
+   [[file:images/Screenshot_20211022_171008.png]]
+   Now that there are Emacs Lisp bindings 
    for tree-sitter, we can work more easily
    with the structure of code instead of 
-   just using regular expressions. 
-   You can use tree-sitter for
-   #+CAPTION: treesitter-powered snippets
+   just using regular expressions.
+   Check out the talk
+   on [[https://emacsconf.org/2021/talks/structural/][Tree-edit and structural editing]]
+   to learn more.
+   #+CAPTION: 6. tree-sitter-powered Emacs Lisp - blog.meain.io/2021/intelligent-snippets-treesitter/
    [[file:images/Screenshot_20211020_212756.png]]
+   You can use tree-sitter for
    [[https://blog.meain.io/2021/intelligent-snippets-treesitter/][intelligent snippets]] that get information 
    from the code around them,
-   #+CAPTION: symex-ts
+   #+CAPTION: github.com/polaris64/symex-ts
    [[file:images/Screenshot_20211020_213017.png]]
    [[https://github.com/polaris64/symex-ts][editing Lisp expressions]], 
-   #+CAPTION: evil-textobj
+   #+CAPTION: github.com/meain/evil-textobj-tree-sitter
    [[file:images/evil-textobj.gif]]
    and [[https://github.com/meain/evil-textobj-tree-sitter][navigating text objects in Evil mode.]] 
    (That's when Emacs is pretending to be Vi.) 
    Dynamic modules help us add more to Emacs 
    than Emacs Lisp easily offers,
-   #+CAPTION: GopCaml
+   #+CAPTION: GopCaml - www.youtube.com/watch?v=KipRuiLXYEo
    [[file:images/Screenshot_20211020_213235.png]]
    such as [[https://www.youtube.com/watch?v=KipRuiLXYEo][structural editing in OCaml]]
-   #+CAPTION: parinfer-rust
+   #+CAPTION: parinfer-rust - github.com/justinbarclay/parinfer-rust-mode
    [[file:images/parinfer-rust.gif]]
    and [[https://github.com/justinbarclay/parinfer-rust-mode#installing][using Rust to figure out parentheses]]
    and indentation for Lisp.
-   #+CAPTION: Extending Emacs in Rust with Dynamic Modules
+   #+CAPTION: Extending Emacs in Rust with Dynamic Modules - emacsconf.org/2021/talks/rust/
    [[file:images/Screenshot_20211020_213423.png]]
    If you're curious about dynamic modules,
    check out the talk on
    [[https://emacsconf.org/2021/talks/rust/][Extending Emacs in Rust with Dynamic Modules]].
 7. 
-   #+CAPTION: CRDT - collaborative editing
+   #+CAPTION: 7. CRDT - collaborative editing - elpa.gnu.org/packages/crdt.html
    [[file:images/Screenshot_20211020_213543.png]]
    Collaborative editing is now much easier 
    since the [[https://elpa.gnu.org/packages/crdt.html][CRDT]] package is in GNU ELPA. ([[https://www.reddit.com/r/emacs/comments/pdi08v/crdtel_the_collaborative_editing_package_now_on/][Reddit]]) 
@@ -202,77 +215,79 @@ https://emacsconf.org/2021/talks/news/ .
    using their own Emacs. 
    This means you can keep your own config
    and keybindings, yay! 
-   #+CAPTION: Emacs Research Group
+   #+CAPTION: Emacs Research Group - emacsconf.org/2021/talks/erg/
    [[file:images/Screenshot_20211020_213619.png]]
    Watch the [[https://emacsconf.org/2021/talks/erg/][Emacs Research Group talk]] 
    for an example of how several people 
    used it to work together.
-8. In case you're still under the impression 
+8.
+   #+CAPTION: 8. More graphical experiments: OpenGL - www.reddit.com/r/emacs/comments/kn3fzq
+   [[file:images/opengl.png]]
+   In case you're still under the impression 
    that Emacs is just a text editor, 
    some folks have been working on 
    pretty neat graphical experiments.
-   #+CAPTION: OpenGL
-   [[file:images/opengl.png]]
    These [[https://www.reddit.com/r/emacs/comments/kn3fzq/draw_anything_to_emacs_buffers_with_opengl/][OpenGL bindings for Emacs Lisp]] 
    use an embedded xwidget,
    while other prototypes use the SVG support
    that's built into Emacs
-   #+CAPTION: Gantt charts
+   #+CAPTION: Gantt charts - github.com/Aightech/org-gantt-svg
    [[file:images/Screenshot_20211020_214059.png]]
    for [[https://github.com/Aightech/org-gantt-svg][Gantt charts]] ([[https://www.reddit.com/r/emacs/comments/prezj6/simple_gantt_chart_from_an_org_todo_list_with_svg/][Reddit]]),
 
-   #+CAPTION: Scribble
+   #+CAPTION: Scribble - lifeofpenguin.blogspot.com/2021/08/scribble-notes-in-gnu-emacs.html
    [[file:images/scribble.png]]
    [[https://lifeofpenguin.blogspot.com/2021/08/scribble-notes-in-gnu-emacs.html][scribbles]],
-   #+CAPTION: el-easydraw
+   #+CAPTION: el-easydraw - www.reddit.com/r/emacs/comments/pvtbq5
    [[file:images/Screenshot_20211020_214428.png]]
-   and even [[https://www.reddit.com/r/emacs/comments/pvtbq5/emacs_drawing_tool/][diagrams]].
-   #+CAPTION: el-easydraw color picker
+   and even [[https://www.reddit.com/r/emacs/comments/pvtbq5/emacs_drawing_tool/][diagrams]]. ([[https://www.reddit.com/r/emacs/comments/pvtbq5][Reddit]])
+   #+CAPTION: el-easydraw color picker - github.com/misohena/el-easydraw
    [[file:images/color-picker-minibuffer.png]]
    The color-picker from that one 
    looks particularly useful for CSS.
    If you want to play around with adding SVGs 
    to your files and interfaces,
-   #+CAPTION: svg-icons
+   #+CAPTION: svg-icon - github.com/rougier/emacs-svg-icon
    [[file:images/svg-icons.png]]
-   [[https://github.com/rougier/emacs-svg-icon][svg icons]]
-   #+CAPTION: svg-lib
+   [[https://github.com/rougier/emacs-svg-icon][svg icon]]
+   #+CAPTION: svg-lib - elpa.gnu.org/packages/svg-lib.html
    [[file:images/svg-lib.png]]
    and [[https://elpa.gnu.org/packages/svg-lib.html][svg-lib]] 
    might be good places to start. ([[https://www.reddit.com/r/emacs/comments/pyee44/svglib_is_on_elpa/][Reddit]])
    Of course, there's always a place 
    for ASCII art,
-   #+CAPTION: boxy-headings
+   #+CAPTION: boxy-headings - www.reddit.com/r/emacs/comments/q2z29f
    [[file:images/boxy-headings.gif]]
    especially with the new [[https://gitlab.com/tygrdev/boxy][boxy]] package
    that you can use for [[https://www.reddit.com/r/emacs/comments/q2z29f/boxyheadlines_and_orgreal_are_now_on_elpa/][org files]],
-   #+CAPTION: boxy-imenu
+   #+CAPTION: boxy-imenu - gitlab.com/tygrdev/boxy-imenu
    [[file:images/boxy-imenu.gif]]
    [[https://gitlab.com/tygrdev/boxy-imenu][imenu navigation]],
-   #+CAPTION: org-real
+   #+CAPTION: org-real - gitlab.com/tygrdev/org-real
    [[file:images/org-real.gif]]
    and even [[https://gitlab.com/tygrdev/org-real][things in real life]].
-9. There have been a lot of great videos 
-   and livestreams about Emacs this year.
-   #+CAPTION: System Crafters
+9. 
+   #+CAPTION: 9. Lots of posts and videos: System Crafters... - systemcrafters.cc/
    [[file:images/Screenshot_20211021_002413.png]]
+   There have been a lot of great posts, videos 
+   and livestreams about Emacs this year.
    In addition to the ones from [[https://systemcrafters.cc/][System Crafters]],
-   #+CAPTION: Emacs Elements
+   #+CAPTION: Emacs Elements... - www.youtube.com/channel/UCe5excZqMeG1CIW-YhMTCEQ
    [[file:images/Screenshot_20211021_002120.png]]
    [[https://www.youtube.com/channel/UCe5excZqMeG1CIW-YhMTCEQ][Emacs Elements]],
-   #+CAPTION: Protesilaos Stavrou
+   #+CAPTION: Protesilaos Stavrou... - protesilaos.com/
    [[file:images/Screenshot_20211021_002254.png]]
    and [[https://protesilaos.com/][Protesilaos]] 
    (who has started livestreaming),
-   #+CAPTION: John Kitchin
+   #+CAPTION: John Kitchin... - www.youtube.com/user/jrkitchin
    [[file:images/Screenshot_20211021_002218.png]]
    [[https://www.youtube.com/user/jrkitchin][John Kitchin]]
-   #+CAPTION: Mike Zamansky
+   #+CAPTION: Mike Zamansky - cestlaz.github.io/categories/emacs/
    [[file:images/Screenshot_20211021_002452.png]]
    and [[https://cestlaz.github.io/categories/emacs/][Mike Zamansky]] 
    are both back, hooray!
 10. 
-    #+CAPTION: #emacs
+    #+CAPTION: 10. #emacs on libera.chat - www.emacswiki.org/emacs/EmacsChannel
     [[file:images/Screenshot_20211021_002604.png]]
     Lastly, if you want to chat 
     with other Emacs folks
@@ -282,7 +297,7 @@ https://emacsconf.org/2021/talks/news/ .
     are now on the [[https://libera.chat]] network
     instead of Freenode. ([[https://www.emacswiki.org/emacs/EmacsChannel][EmacsWiki]])
 
-#+CAPTION: Emacs News Highlights
+#+CAPTION: Emacs News Highlights - emacsconf.org/2021/talks/news
 [[file:images/Screenshot_20211021_002952.png]]
 
 If you'd like to add something I've missed,
@@ -299,7 +314,7 @@ Enjoy the rest of EmacsConf 2021!
   (goto-char (org-find-exact-headline-in-buffer "Talk plans"))
   (org-end-of-meta-data)
   (replace-regexp-in-string
-   "\\[\\[.*\\]\\[\\(\\([^]]+\\|\n\\)*?\\)\\]\\]"
+   "\\[\\[.*?\\]\\[\\(\\([^]]+\\|\n\\)*?\\)\\]\\]"
    "\\2"
    (replace-regexp-in-string "\n[ \t\n]*\n" "\n" (replace-regexp-in-string
                                                   "#\\+CAPTION:.*\n\\|\\[\\[file:.*?\\]\\]" ""
@@ -325,7 +340,8 @@ https://emacsconf.org/2021/talks/news/ .
    make things more fun. 😎👍
    John Wiegley will share more Emacs 28 details
    in his update, so check out his talk.
-2. Org Mode is now at version 9.5.
+2.
+   Org Mode is now at version 9.5.
    New features include
    a library for managing citations,
    asynchronous session support
@@ -337,14 +353,14 @@ https://emacsconf.org/2021/talks/news/ .
    you can update your configuration
    to get Org from GNU ELPA
    and org-contrib from NonGNU ELPA.
-   The TMIO)
+   The new release of the Org Roam package (TMIO)
    should be a faster and more consistent way
    to use Org to manage a knowledgebase,
    and org-roam-ui looks pretty snazzy.
    The best way to keep up with Org changes
    is to check out the blog This Month in Org.
 3.
-   New Magit major release, now version 3.3.
+   New Magit major release!
    Jonas Bernoulli has split some functionality
    into other packages so that
    Emacs Lisp developers can use them, such as
@@ -354,8 +370,10 @@ https://emacsconf.org/2021/talks/news/ .
    You can learn more about Transient
    in the talk on self-describing 
    smart domain-specific languages or DSLs.
-4. In terms of smaller packages, there's been
+4. 
+   In terms of smaller packages, there's been
    a lot of activity around completion.
+   Karthik has this great diagram.
    I think the idea is that instead of having
    one large completion system
    like Helm or Icicles, you can choose
@@ -366,7 +384,7 @@ https://emacsconf.org/2021/talks/news/ .
      selectrum 
      or vertico,
      which are both completion interfaces,
-     add marginalia for more information
+     add marginalia for more information,
      and try consult for many useful
      completing commands.
    There are so many options, 
@@ -384,7 +402,8 @@ https://emacsconf.org/2021/talks/news/ .
    you actually want to do something else. 
    For more ideas, check out 
    Fifteen Ways to Use Embark.
-6. Now that there are Emacs Lisp bindings 
+6. 
+   Now that there are Emacs Lisp bindings 
    for tree-sitter, we can work more easily
    with the structure of code instead of 
    just using regular expressions. 
@@ -404,7 +423,7 @@ https://emacsconf.org/2021/talks/news/ .
    Extending Emacs in Rust with Dynamic Modules.
 7. 
    Collaborative editing is now much easier 
-   since the Reddit) 
+   since the CRDT package is in GNU ELPA. (Reddit) 
    It allows multiple people to edit 
    the same file over the network, 
    using their own Emacs. 
@@ -413,7 +432,8 @@ https://emacsconf.org/2021/talks/news/ .
    Watch the Emacs Research Group talk 
    for an example of how several people 
    used it to work together.
-8. In case you're still under the impression 
+8.
+   In case you're still under the impression 
    that Emacs is just a text editor, 
    some folks have been working on 
    pretty neat graphical experiments.
@@ -421,14 +441,14 @@ https://emacsconf.org/2021/talks/news/ .
    use an embedded xwidget,
    while other prototypes use the SVG support
    that's built into Emacs
-   for Reddit),
+   for Gantt charts (Reddit),
    scribbles,
-   and even diagrams.
+   and even diagrams. (Reddit)
    The color-picker from that one 
    looks particularly useful for CSS.
    If you want to play around with adding SVGs 
    to your files and interfaces,
-   svg icons
+   svg icon
    and svg-lib 
    might be good places to start. (Reddit)
    Of course, there's always a place 
@@ -437,7 +457,8 @@ https://emacsconf.org/2021/talks/news/ .
    that you can use for org files,
    imenu navigation,
    and even things in real life.
-9. There have been a lot of great videos 
+9. 
+   There have been a lot of great posts, videos 
    and livestreams about Emacs this year.
    In addition to the ones from System Crafters,
    Emacs Elements,
@@ -496,7 +517,7 @@ ffmpeg?
 
 #+RESULTS:
 :results:
-my-talk-with-script
+nil
 :end:
 
 Actually, I'd like to get these out of the vtt as well, so I can determine timing.
@@ -524,36 +545,65 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
     (concat "ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "
             (shell-quote-argument (expand-file-name filename))))))
 
+(defvar my-record-description-height 50 "Number of pixels for top description in video.")
+(defvar my-record-caption-height 150 "Number of pixels to leave at the bottom for captions in video.")
+(defvar my-record-output-video-width 1280)
+(defvar my-record-output-video-height 720)
+(defun my-record-segment-scale-filter (o)
+  "Return the complex filter for scaling."
+  (seq-let (start-ms end-ms caption description) o
+    (format "scale=%d:%d:force_original_aspect_ratio=decrease,setsar=sar=1,pad=%d:%d:(ow-iw)/2:%d+(oh-%d-%d-ih)/2"
+            my-record-output-video-width
+            (- my-record-output-video-height (or my-record-caption-height 0) (or my-record-description-height 0))
+            my-record-output-video-width
+            my-record-output-video-height
+            my-record-description-height
+            my-record-description-height
+            my-record-caption-height
+            )))
+
+(defvar my-record-description-drawtext-filter-params "fontcolor=white:x=5:y=5:fontsize=40:font=sachacHand")
 (defun my-record-format-selection-as-visuals (selection)
-  (let ((info
-         (seq-map-indexed
-          (lambda (o i)
-            (seq-let (start-ms end-ms caption) o
-              (when (string-match "file:\\([^]]+\\)" caption)
-                (let ((filename (match-string 1 caption))
-                      (duration (- end-ms start-ms)))
-                  (cond
-                   ((string-match "mp4" caption)
-                    (list
-                     (format "-i %s" filename)
-                     (let ((video-duration (my-record-segment-get-video-duration-ms filename)))
-                       (format "[%d:v]setpts=PTS*%.3f,scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];"
-                               i
-                               (/ duration video-duration)
-                               i))))
-                   ((string-match "gif$" filename)
-                    (let ((gif-frames (my-record-segment-get-frames filename)))
-                      (list
-                       (format "-r %0.3f -i %s" (/ gif-frames (/ duration 1000.0)) filename)
-                       ;; (format "-i %s" filename)
-                       (format "[%d:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];" i i))))
-                   (t
-                    (list
-                     (format "-loop 1 -t %0.3f -i %s"
-                             (/ duration 1000.0)
-                             (shell-quote-argument filename))
-                     (format "[%d:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r%d];" i i))))))))
-          selection)))
+  (let* (info)
+    (setq info
+          (seq-map-indexed
+           (lambda (o i)
+             (seq-let (start-ms end-ms caption description description-filter) o
+               (setq description-filter
+                     (if description
+                         (concat ",drawtext=\"" my-record-description-drawtext-filter-params ":text='"
+                                 description ; TODO quote this properly
+                                 "'\"")
+                       ""))
+               (when (string-match "file:\\([^]]+\\)" caption)
+                 (let* ((filename (match-string 1 caption))
+                        (duration (- end-ms start-ms))
+                        (scale (my-record-segment-scale-filter o)))
+                   (cond
+                    ((string-match "mp4" caption)
+                     (list
+                      (format "-i %s" filename)
+                      (let ((video-duration (my-record-segment-get-video-duration-ms filename)))
+                        (format
+                         "[%d:v]setpts=PTS*%.3f,%s%s[r%d];"
+                         i
+                         (/ duration video-duration)
+                         scale
+                         description-filter
+                         i))))
+                    ((string-match "gif$" filename)
+                     (let ((gif-frames (my-record-segment-get-frames filename)))
+                       (list
+                        (format "-r %0.3f -i %s" (/ gif-frames (/ duration 1000.0)) filename)
+                        ;; (format "-i %s" filename)
+                        (format "[%d:v]%s%s[r%d];" i scale description-filter i))))
+                    (t
+                     (list
+                      (format "-loop 1 -t %0.3f -i %s"
+                              (/ duration 1000.0)
+                              (shell-quote-argument filename))
+                      (format "[%d:v]%s%s[r%d];" i scale description-filter i))))))))
+           selection))
     (concat
      (mapconcat 'car info " ")
      " -filter_complex \""
@@ -563,6 +613,7 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
       (number-sequence 0 (1- (length selection)))
       "")
      (format "concat=n=%d:v=1:a=0\"" (length selection)))))
+(defvar my-record-segments-buffer "*Segments*" "Buffer with the segments.")
 (defun my-record-compile-visuals ()
   (interactive)
   (let ((result
@@ -572,25 +623,31 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
                  " -shortest -c:v vp8 -vsync 1 -b:v 800k visuals.webm")))
     (kill-new result)
     result))
-(defun my-record-test-visuals ()
-  (interactive)
-  (let ((result
-         (concat "ffmpeg -y "
-                 (with-current-buffer my-record-segments-buffer
-                   (my-record-format-selection-as-visuals
-                    (my-talk-with-script
-                     (cl-loop
-                      while (re-search-forward "\\[\\[file:\\([^]]+\\)\\]" nil t)
-                      collect (list 1000 2000 (match-string-no-properties 0))))))
-                 " -shortest -c:v vp8 -vsync 2 -b:v 800k visuals.webm")))
+(defun my-record-test-visuals (&optional limit)
+  (interactive "p")
+  (let* ((visuals (my-talk-with-script
+                   (cl-loop
+                    while (re-search-forward "#\\+CAPTION: \\(.+\\)\n[ \t]*\\(\\[\\[file:[^]]+\\]\\)" nil t)
+                    collect (list 1000 2000
+                                  (match-string-no-properties 2)
+                                  (match-string-no-properties 1)
+                                  ))))
+         (result
+          (concat "ffmpeg -y "
+                  (with-current-buffer my-record-segments-buffer
+                    (my-record-format-selection-as-visuals
+                     (if (> limit 1)
+                         (seq-take visuals limit)
+                       visuals)
+                     ))
+                  " -i visuals.vtt -c:v vp8 -vsync 2 -b:v 800k visuals.webm")))
     (kill-new result)
     result))
-(my-record-compile-visuals)
 #+end_src
 
 #+RESULTS:
 :results:
-ffmpeg -y -loop 1 -t 0.695 -i images/Screenshot_20211020_095333.png -loop 1 -t 1.723 -i images/Screenshot_20211020_095812.png -loop 1 -t 4.000 -i images/EmacslZhRzr.svg -filter_complex "[0:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r0];[1:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r1];[2:v]scale=1280:720:force_original_aspect_ratio=decrease,setsar=sar=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2[r2];[r0][r1][r2]concat=n=3:v=1:a=0" -shortest -c:v vp8 -vsync 1 -b:v 800k visuals.webm
+my-record-test-visuals
 :end:
 *** TODO handle animated gifs
 https://unix.stackexchange.com/questions/40638/how-to-do-i-convert-an-animated-gif-to-an-mp4-or-mv4-on-the-command-line
@@ -624,22 +681,26 @@ Interface:
 (obs-websocket-connect)
 #+end_src
 
+#+RESULTS:
+:results:
+t
+:end:
+
 #+begin_src emacs-lisp
 (defvar my-record-backend nil "Either 'sox, 'obs, or nil.")
 (defvar my-record-frontend 'hydra "Either 'hydra or 'web.")
-(defvar my-record-directory "~/recordings")
-(defvar my-record-audio-extension ".wav")
+(defvar my-record-directory "tmp")
+(defvar my-record-audio-extension ".ogg")
 (defvar my-record-start nil "Start of the current recording segment in milliseconds.")
 (defvar my-record-end nil "End of current recording sgement in milliseconds.")
 (defvar my-record-caption nil "Current caption.")
-(defvar my-record-segments-buffer "*Segments*" "Buffer with the segments.")
 (defvar my-record-paused nil "If non-nil, recording is currently paused.")
 
 (defvar my-record-sox-process nil "Process for recording via sox.")
 (defvar my-record-sox-buffer "*Sox*")
 (defvar my-record-sox-executable "rec")
 (defvar my-record-sox-channels 1)
-(defvar my-record-sox-rate 16000)
+(defvar my-record-sox-rate 48000)
 (defvar my-record-start-time nil "Emacs timestamp from when the sox process was started.")
 (defvar my-record-sox-filename nil)
 
@@ -648,22 +709,22 @@ Interface:
    ((eq my-record-backend 'obs) obs-websocket-recording-filename)
    ((eq my-record-backend 'sox) my-record-sox-filename)
    (t "")))
-(defun my-record-offset-ms ()
+(defun my-record-offset-ms (&optional time)
   (cond
    ((eq my-record-backend 'obs) (my-obs-websocket-recording-time-msecs))
-   (t (* (float-time (time-subtract (current-time) my-record-start-time)) 1000.0)))) ; sox or nil
-   
+   (t (* (float-time (time-subtract (or time (current-time)) my-record-start-time)) 1000.0)))) ; sox or nil
 
-(defun my-record-sox-start ()
+(defun my-record-sox-start (&optional base)
   (interactive)
   (setq my-record-sox-filename
         (expand-file-name
-         (concat (format-time-string "%Y-%m-%d-%H%M%S") my-record-audio-extension)
+         (concat base my-record-audio-extension)
          my-record-directory))
   (setq my-record-sox-buffer
         (get-buffer-create my-record-sox-buffer))
   (if (process-live-p my-record-sox-process)
       (quit-process my-record-sox-process))
+  (kill-new my-record-sox-filename)
   (setq my-record-sox-process
         (start-process
          "sox"
@@ -682,26 +743,26 @@ Interface:
   (setq my-record-caption (my-record-current-caption))
   (when (eq my-record-backend 'obs)
     (obs-websocket-send "SendCaptions" :text (string-trim (my-record-current-caption)))))
-(defun my-record-set-start ()
-  (setq my-record-start (my-record-offset-ms)))
-(defun my-record-cancel-segment ()
+(defun my-record-set-start (&optional time)
+  (setq my-record-start (my-record-offset-ms time)))
+(defun my-record-cancel-segment (&optional time)
   "Reset the start of the current segment and ignore the previous recording."
   (interactive)
-  (my-record-set-start)
+  (my-record-set-start time)
   (setq my-record-end nil)
   (my-record-send-caption))
 
-(defun my-record-save-segment ()
+(defun my-record-save-segment (&optional time)
   "Save the current segment in the target file."
   (when (and my-record-start (my-record-current-filename))
     (with-current-buffer (get-buffer-create my-record-segments-buffer)
       (goto-char (point-max))
-      (setq my-record-end (or my-record-end (my-record-offset-ms)))
+      (setq my-record-end (or my-record-end (my-record-offset-ms time)))
       (insert "\n\nNOTE: " (my-record-current-filename) "\n"
               (my-msecs-to-timestamp my-record-start) " --> " (my-msecs-to-timestamp my-record-end) "\n"
               (string-trim my-record-caption) "\n")
       (setq my-record-end nil)
-      (my-record-set-start)
+      (my-record-set-start time)
       (my-scroll-buffer-to-bottom (current-buffer)))))
 
 (defun my-scroll-buffer-to-bottom (&optional buffer)
@@ -710,11 +771,11 @@ Interface:
     (dolist (window windows)
       (set-window-point window (point-max)))))
 
-(defun my-record-retry-segment ()
+(defun my-record-retry-segment (&optional time)
   "Unpause if needed, copy segment to the other window, and set the beginning time."
   (interactive)
-  (my-record-save-segment)
-  (my-record-set-start)
+  (my-record-save-segment time)
+  (my-record-set-start time)
   (my-record-send-caption))
 
 ;; RET Accept segment and move to next one: set end of segment, copy to other side, highlight next segment to say, unpause if needed
@@ -725,22 +786,22 @@ Interface:
 ;; Up, down Go to previous or next subtitle: 
 ;; Ins Edit: cancel segment, stop recording
 
-(defun my-record-previous-segment ()
+(defun my-record-previous-segment (&optional time)
   "Cancel segment, set new beginning time, move forward."
   (interactive)
   (forward-line -1)
-  (my-record-cancel-segment))
+  (my-record-cancel-segment time))
 
-(defun my-record-next-segment ()
+(defun my-record-next-segment (&optional time)
   "Cancel segment, set new beginning time, move forward."
   (interactive)
   (forward-line 1)
-  (my-record-cancel-segment))
+  (my-record-cancel-segment time))
 
-(defun my-record-stop ()
+(defun my-record-stop (&optional time)
   "Finish recording."
   (interactive)
-  (my-record-save-segment)
+  (my-record-save-segment time)
   (cond
    ((eq my-record-backend 'sox)
     (when (process-live-p my-record-sox-process) (quit-process my-record-sox-process)))
@@ -762,27 +823,30 @@ Interface:
 ;;   (interactive)
 ;;   nil)
 
-(defun my-record-accept-segment ()
+(defun my-record-accept-segment (&optional time)
   "Accept segment and move to next one: set end of segment, copy to other side, highlight next segment to say."
   (interactive)
-  (my-record-save-segment)
+  (my-record-save-segment time)
   (forward-line 1)
   (my-record-send-caption))
 
-(defun my-record-setup (filename)
-  (interactive "FSegment VTT: ")
-  (setq my-record-segments-buffer (find-file-noselect filename))
-  (delete-other-windows)
-  (setq my-record-script-buffer (current-buffer))
-  (display-buffer (get-buffer-create my-record-segments-buffer))
-  (if my-record-backend (text-scale-set 4))
-  (setq my-record-start-time (current-time))
-  ;; (my-record-minor-mode 1)
-  (my-record-start)
-  (my-record-retry-segment)
-
-  ;; (my-record/body)
-  )
+(defun my-record-setup ()
+  (interactive)
+  (let ((base (format-time-string "%Y-%m-%d-%H%M%S")))
+    (setq my-record-segments-buffer
+          (find-file-noselect (expand-file-name
+                               (concat base ".vtt")
+                               my-record-directory)))
+    (delete-other-windows)
+    (setq my-record-script-buffer (current-buffer))
+    (display-buffer (get-buffer-create my-record-segments-buffer))
+    (if my-record-backend (text-scale-set 4))
+    (setq my-record-start-time (current-time))
+                                        ;  (my-record-mode 1)
+    (my-record-start base)
+    (my-record-retry-segment)
+    ;; (my-record/body)
+  ))
 
 (defhydra my-record (:exit nil)
   ("SPC" my-stream-toggle-recording (format "Recording [%s]" (if obs-websocket-recording-p "X" " ")))
@@ -796,7 +860,7 @@ Interface:
   ;; ("<insert>" my-record-edit "Edit" :exit t)
   )
 
-(defun my-record-start ()
+(defun my-record-start (&optional base)
   "Start recording."
   (interactive)
   (cond
@@ -804,7 +868,7 @@ Interface:
     (when (not (websocket-openp obs-websocket))
       (obs-websocket-connect))
     (obs-websocket-send "StartRecording"))
-   ((eq my-record-backend 'sox) (my-record-sox-start))))
+   ((eq my-record-backend 'sox) (my-record-sox-start base))))
 
 ;; (defun my-record-select-line (event)
 ;;   (interactive "e")
@@ -813,22 +877,29 @@ Interface:
 ;;     (goto-char pos)
 ;;     (beginning-of-line)
 ;;     (my-record-send-caption)))
+;; (defvar my-record-mode-map (make-sparse-keymap))
+;; (defvar my-record-mode-map
+;;   (let ((map (make-sparse-keymap)))
+;;    (define-key map (kbd "SPC") #'my-stream-toggle-recording)
+;;     (define-key map (kbd "RET") #'my-record-accept-segment)
+;;     (define-key map (kbd "<backspace>") #' my-record-cancel-segment)
+;;     (define-key map (kbd "<left>") #' my-record-retry-segment)
+;;     (define-key map (kbd "<up>") #' my-record-previous-segment)
+;;     (define-key map (kbd "<down>") #' my-record-next-segment)
+;;     (define-key map "q" #'my-record-stop)
+;;     (define-key map (kbd "C-c C-c") 'my-record-mode)
+;;     map))
 
-(defvar my-record-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-c") 'my-record-mode)))
-
-(define-minor-mode my-record-mode ()
-  "Record audio and associate with lines from the current file."
-  nil
-  :lighter "rec"
-  :global nil
-  (if my-record-minor-mode
-      (progn
-        (message "Now recording..."))
-    (progn
-      (my-record-stop)
-      (message "Stopped recording."))))
+;; (define-minor-mode my-record-mode 
+;;   "Record audio and associate with lines from the current file."
+;;   nil
+;;   :lighter "rec"
+;;   :global nil
+;;   :keymap my-record-mode-map
+;;   (if my-record-mode
+;;       (progn
+;;         (message "Now recording..."))
+;;     (message "Stopped recording.")))
 #+end_src
 
 #+RESULTS:
@@ -889,27 +960,32 @@ And then take the images and drop them in
           (end-ms (subed-vtt--timestamp-to-msecs end)))
      (list start-ms end-ms caption))))
 
-(defun my-record-export-labels (filename &optional beg end)
-  (interactive "FFile: \nr")
-  (with-temp-file filename
+(defun my-record-export-labels (&optional beg end)
+  (interactive "r")
+  (with-temp-file
+      (expand-file-name
+       (concat
+        (file-name-base (buffer-file-name (or my-record-segments-buffer (current-buffer))))
+        ".txt")
+       (file-name-directory (buffer-file-name (or my-record-segments-buffer (current-buffer)))))
     (insert (my-record-format-as-audacity-labels
-             (with-current-buffer my-record-segments-buffer
+             (with-current-buffer (or my-record-segments-buffer (current-buffer))
                (unless (region-active-p)
                  (setq beg (point-min) end (point-max)))
-               (my-record-format-as-audacity-labels
-                (my-record-get-selection-for-region beg end)))))))
+               (my-record-get-selection-for-region beg end)))))) 
 (defvar my-record-recording nil "File to split up.")
 (defun my-record-compose-audio (&optional beg end)
   (interactive "r")
   (setq beg (or beg (point-min))
         end (or end (point-max)))
-  (let (selection (file my-record-recording) result)
+  (let (selection
+        (file my-record-recording) result)
     (with-current-buffer my-record-segments-buffer
       (goto-char (point-min))
       (setq selection (my-record-format-as-ffmpeg-selection (my-record-get-selection-for-region beg end))))
     (setq result
           (format "ffmpeg -y -i %s -af \"aselect='%s',asetpts=N/SR/TB\" -vn -acodec libvorbis %s"
-                  (shell-quote-argument file)
+                  (shell-quote-argument (expand-file-name file))
                   selection
                   "output.ogg"))
     (kill-new result)
@@ -920,9 +996,9 @@ And then take the images and drop them in
                      (if (region-active-p) (max (point) (mark)) (point-max))
                      ))
   (save-excursion
-    (shell-command (my-record-compose-audio beg
-                                            end))
+    (shell-command-to-string (my-record-compose-audio beg end))
     (mpv-play "output.ogg")))
+
 #+end_src
 
 #+RESULTS:
@@ -938,43 +1014,57 @@ img { filter: drop-shadow(0 0.2rem 0.25rem rgba(0, 0, 0, 0.2)); display: block; 
 #+end_export
 ** Web interface for controlling it
 
+Set httpd-host to the IP address or hostname to have it listen beyond localhost.
+
 #+begin_src emacs-lisp
 (use-package simple-httpd)
-(defservlet record-controller text/html (path)
+(defservlet control text/html (path)
   (insert "
+  <div id=\"feedback\"></div>
 <div class=\"controller\">
-  <button onclick=\"javascript:fetch('/previous')\">
-    Previous
-  </button>
-  <button onclick=\"javascript:fetch('/retry')\" style=\"background-color: red\">
+  <button onclick=\"javascript:control('retry')\" style=\"background-color: red\">
     Retry
   </button>
-  <button onclick=\"javascript:fetch('/next')\" style=\"background-color: green\">
-    Next
+  <button onclick=\"javascript:control('previous')\">
+    Previous
+  </button>
+  <button onclick=\"javascript:control('accept')\" style=\"background-color: green\">
+    Accept
   </button>
 </div>
 <style>
- .controller { height: 100%; display: flex; flex-direction: column }
- button { flex-grow: 1; font-size: 70px } 
-</style>"))
+ .controller { display: flex; flex-direction: row }
+ button { flex-grow: 1; font-size: 70px }
+#feedback { font-size: 30px; }
+</style>
+<script>
+function control(op) {
+  fetch('/api/' + op + '/' + Date.now()).then(async function(res) {
+    document.getElementById('feedback').innerText = await res.text();
+  });
+}
+</script>
+"))
 (defvar my-record-script-buffer nil)
-(defservlet previous application/json ()
-  (with-current-buffer my-record-script-buffer
-   (my-record-previous-segment))
-  (insert "{true}"))
-(defservlet retry application/json ()
-  (with-current-buffer my-record-script-buffer
-  (my-record-cancel-segment))
-  (insert "{true}"))
-(defservlet next application/json ()
-  (with-current-buffer my-record-script-buffer
-    (my-record-accept-segment))
-  (insert "{true}"))
+
+(defun my-record-web-op (path)
+  (when (string-match "^/api/\\(previous\\|retry\\|accept\\)/\\([0-9]+\\)" path)
+    (with-current-buffer my-record-script-buffer
+      (funcall
+       (pcase (match-string 1 path)
+         ("previous" 'my-record-previous-segment)
+         ("retry" 'my-record-retry-segment)
+         ("accept" 'my-record-accept-segment))
+       (seconds-to-time (/ (string-to-number (match-string 2 path)) 1000.0)))
+      (buffer-substring (point) (save-excursion (forward-line 3) (point))))))
+
+(defservlet api text/html (path)
+  (insert (my-record-web-op path)))
 #+end_src
 
 #+RESULTS:
 :results:
-httpd/next
+httpd/api
 :end:
 ** Copy images
 #+begin_src emacs-lisp
@@ -1007,6 +1097,91 @@ my-talk-copy-assets-to-subdir
 
 ** Emoji support
 (set-fontset-font "fontset-default" 'symbol "Noto Color Emoji" nil 'prepend)
+** Waveforms
+
+It looks like using the web interface on my phone to accept or retry segments adds too much of a delay, so I need to adjust some timestamps earlier. It might be easier to finetune timestamps if I can see the waveforms. [[https://github.com/larsmagne/wave][wave]] plots PCM data in Emacs. Maybe I can use [[https://trac.ffmpeg.org/wiki/Waveform][ffmpeg's showwavespic filter]] to show it. I think it would generally be useful to be able to see the waveform for a particular segment in a WebVTT subtitle file.
+
+#+begin_src emacs-lisp
+(defvar my-record-ffmpeg-executable "ffmpeg")
+(defun my-record-get-waveform (sound-file output-file width height &optional start-ms end-ms)
+  (setq start-ms (or start-ms 0))
+  (let ((args
+         (append
+          (list "-ss" (format "%.3f" (/ start-ms 1000.0)))
+          (if end-ms
+              (list "-t" (format "%.3f" (/ (- end-ms start-ms) 1000.0))))
+          (list
+           "-i"
+           sound-file
+           "-filter_complex"
+           (format "showwavespic=s=%dx%d" width height)
+           "-frames:v"
+           "1"
+           "-y"
+           output-file))))
+    (apply 'call-process
+            my-record-ffmpeg-executable
+            nil nil nil
+            args)
+    ;; (string-join (cons my-record-ffmpeg-executable args) " ")
+    output-file))
+
+(defvar my-record-waveform-width 400)
+(defvar my-record-waveform-height 40)
+(defun my-record-waveform-click (event)
+  (interactive "e")
+  "Copy the timestamp of the clicked-on image."
+  (let* ((x (car (elt 2 (cadr event))))
+         (string (elt 4 (cadr event))))
+    
+    )
+  (pp event)
+  )
+(defvar my-record-waveform-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [mouse-1] #'my-record-waveform-click)
+    map))
+(defun my-record-subed-make-waveform-for-subtitle ()
+  (interactive)
+  (let ((filename (concat (make-temp-name temporary-file-directory) ".png"))
+        (start-ms (subed-subtitle-msecs-start))
+        (end-ms (subed-subtitle-msecs-stop))
+        image overlay)
+    (save-excursion
+      (remove-overlays
+       (subed-jump-to-subtitle-time-start)
+       (or (subed-jump-to-subtitle-end) (point-max))
+       'waveform t)
+      (setq image (create-image
+                   (my-record-get-waveform
+                    (subed-guess-video-file)
+                    filename
+                    my-record-waveform-width
+                    my-record-waveform-height
+                    start-ms
+                    end-ms)))
+      (subed-jump-to-subtitle-time-stop)
+      (end-of-line)
+      (let* ((string "x")
+             (overlay (make-overlay (point) (point))))
+        (put-text-property 0 (length string) 'display image string)
+        (put-text-property 0 (length string) 'keymap my-record-waveform-map string)
+        (put-text-property 0 (length string) 'start-ms start-ms string)
+        (put-text-property 0 (length string) 'end-ms end-ms string)
+        (overlay-put overlay 'waveform t)
+        (overlay-put overlay 'before-string string)))))
+(defun my-record-subed-show-waveforms ()
+  (interactive)
+  (subed-for-each-subtitle (point-min) (point-max)
+    (my-record-subed-make-waveform-for-subtitle)))
+
+;; (my-record-get-waveform
+;;  "~/code/emacsconf-2021-emacs-news-highlights/tmp/2021-10-21-234703.ogg"
+;;  "tmp/waveform.png"
+;;  2000
+;;  60
+;;  )
+#+end_src
 ** SVG screenshots
 #+begin_src emacs-lisp
 (defun screenshot-svg ()
@@ -1045,3 +1220,4 @@ Saves to a temp file and puts the filename in the kill ring."
 - boxy-headings animated gif: https://gitlab.com/tygrdev/boxy-headings
 - boxy-imenu animated gif: https://gitlab.com/tygrdev/boxy-imenu
 - org-real animated gif: https://gitlab.com/tygrdev/org-real
+- minibuffer interaction paradigm: https://karthinks.com/software/avy-can-do-anything/
