@@ -8,7 +8,7 @@
 
 (* 5 150) 750
 
-Draft of my talk for EmacsConf 2021
+Draft of my talk for EmacsConf 2021 based on highlights from https://sachachua.com/emacs-news
 
 * Talk plans
 :PROPERTIES:
@@ -406,7 +406,10 @@ https://emacsconf.org/2021/talks/news/ .
    Now that there are Emacs Lisp bindings 
    for tree-sitter, we can work more easily
    with the structure of code instead of 
-   just using regular expressions. 
+   just using regular expressions.
+   Check out the talk
+   on Tree-edit and structural editing
+   to learn more.
    You can use tree-sitter for
    intelligent snippets that get information 
    from the code around them,
@@ -507,7 +510,12 @@ CLOSED: [2021-10-21 Thu 00:38]
 CLOCK: [2021-10-20 Wed 09:48]
 :END:
 ** TODO Rerecord audio
-** TODO Figure out how to stitch visuals together
+** TODO Merge audio from different files
+** DONE Figure out how to stitch visuals together
+CLOSED: [2021-10-22 Fri 17:14]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-10-22 Fri 17:14]
+:END:
 
 ffmpeg?
 
@@ -649,15 +657,32 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
 :results:
 my-record-test-visuals
 :end:
-*** TODO handle animated gifs
+*** DONE handle animated gifs
+CLOSED: [2021-10-22 Fri 17:14]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-10-22 Fri 17:14]
+:END:
 https://unix.stackexchange.com/questions/40638/how-to-do-i-convert-an-animated-gif-to-an-mp4-or-mv4-on-the-command-line
-*** TODO squeeze videos to fit
-** TODO Figure out what to do about resolution
+*** DONE squeeze videos to fit
+CLOSED: [2021-10-22 Fri 17:14]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-10-22 Fri 17:14]
+:END:
+** DONE Figure out what to do about resolution
+CLOSED: [2021-10-22 Fri 17:15]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-10-22 Fri 17:15]
+:END:
 1366x768,
 wanted 1280x720,
 my images are small
 
-** TODO Tweak audio editing
+Oh, just needed bitrate
+
+** TODO Tweak audio editing so that I can bisect the start or end given an offset
+#+begin_src emacs-lisp
+
+#+end_src
 ** TODO Tweak caption timing and include it
 ** TODO Put everything together and send the video
 * Code
@@ -714,12 +739,13 @@ t
    ((eq my-record-backend 'obs) (my-obs-websocket-recording-time-msecs))
    (t (* (float-time (time-subtract (or time (current-time)) my-record-start-time)) 1000.0)))) ; sox or nil
 
-(defun my-record-sox-start (&optional base)
+(defun my-record-sox-start (&optional filename)
   (interactive)
   (setq my-record-sox-filename
-        (expand-file-name
-         (concat base my-record-audio-extension)
-         my-record-directory))
+        (or filename
+            (expand-file-name
+             (concat (format-time-string "%Y-%m-%d-%H%M%S") my-record-audio-extension)
+             my-record-directory)))
   (setq my-record-sox-buffer
         (get-buffer-create my-record-sox-buffer))
   (if (process-live-p my-record-sox-process)
@@ -830,23 +856,26 @@ t
   (forward-line 1)
   (my-record-send-caption))
 
+(defun my-record-setup-windows ()
+  (delete-other-windows)  
+  (setq my-record-script-buffer (current-buffer))  
+  (with-selected-window (split-window-right -40)
+    (switch-to-buffer (get-buffer-create my-record-segments-buffer))
+    ;; (with-selected-window (split-window-below -10)
+    ;;   (switch-to-buffer (my-record-make-buttons)))
+    )
+  (if my-record-backend (text-scale-set 4)))
 (defun my-record-setup ()
   (interactive)
-  (let ((base (format-time-string "%Y-%m-%d-%H%M%S")))
-    (setq my-record-segments-buffer
-          (find-file-noselect (expand-file-name
-                               (concat base ".vtt")
-                               my-record-directory)))
-    (delete-other-windows)
-    (setq my-record-script-buffer (current-buffer))
-    (display-buffer (get-buffer-create my-record-segments-buffer))
-    (if my-record-backend (text-scale-set 4))
-    (setq my-record-start-time (current-time))
-                                        ;  (my-record-mode 1)
-    (my-record-start base)
-    (my-record-retry-segment)
-    ;; (my-record/body)
-  ))
+  (my-record-start)
+  (setq my-record-segments-buffer
+        (find-file-noselect (expand-file-name
+                             (concat (file-name-base (my-record-current-filename)) ".vtt")
+                             my-record-directory)))
+  (my-record-setup-windows)
+  (setq my-record-start-time (current-time))
+  (my-record-retry-segment)
+  (my-record-body))
 
 (defhydra my-record (:exit nil)
   ("SPC" my-stream-toggle-recording (format "Recording [%s]" (if obs-websocket-recording-p "X" " ")))
@@ -860,7 +889,36 @@ t
   ;; ("<insert>" my-record-edit "Edit" :exit t)
   )
 
-(defun my-record-start (&optional base)
+(defun my-record-make-buttons ()
+  (interactive)
+  (with-current-buffer (get-buffer-create "*Control*")
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (text-scale-set 6)
+      (widget-create
+       'push-button
+       :notify (lambda (&rest ignore)
+                 (with-current-buffer my-record-script-buffer
+                   (my-record-previous-segment)
+                   (set-window-point (selected-window) (point))))
+       "Previous")
+      (insert "\n")
+      (widget-create
+       'push-button
+       :notify (lambda (&rest ignore) (with-current-buffer my-record-script-buffer (my-record-retry-segment)))
+       "Retry")
+      (insert "\n")
+      (widget-create
+       'push-button
+       :notify (lambda (&rest ignore) (with-current-buffer my-record-script-buffer
+                                        (my-record-accept-segment)
+                                        (set-window-point (selected-window) (point))))
+       "Accept")
+      (widget-setup)
+      (widget-minor-mode))
+    (current-buffer)))
+
+(defun my-record-start ()
   "Start recording."
   (interactive)
   (cond
@@ -868,7 +926,7 @@ t
     (when (not (websocket-openp obs-websocket))
       (obs-websocket-connect))
     (obs-websocket-send "StartRecording"))
-   ((eq my-record-backend 'sox) (my-record-sox-start base))))
+   ((eq my-record-backend 'sox) (my-record-sox-start))))
 
 ;; (defun my-record-select-line (event)
 ;;   (interactive "e")
@@ -907,6 +965,46 @@ t
 my-record-start
 :end:
 
+Let's try a subed-based version. Maybe that will be easier for me to manage.
+
+#+begin_src emacs-lisp
+(defun my-record-subed-setup ()
+  (interactive)
+  (my-record-sox-start (concat (file-name-sans-extension (buffer-file-name)) my-record-audio-extension))
+  (message "Recording...")
+  (my-record-subed/body))
+
+(defun my-record-subed-accept-segment ()
+  (interactive)
+  (let ((end-time (my-record-offset-ms)))
+    (subed-set-subtitle-time-start my-record-start)
+    (subed-set-subtitle-time-stop (my-record-offset-ms))
+    (subed-forward-subtitle-text)
+    (setq my-record-start (my-record-offset-ms))))
+(defun my-record-subed-retry ()
+  (interactive)
+  (setq my-record-start (my-record-offset-ms)))
+
+(defhydra my-record-subed (:exit nil)
+  ("<up>" subed-backward-subtitle-text "Previous")
+  ("<down>" my-record-subed-accept-segment "Accept")
+  ("<left>" my-record-subed-retry "Retry")
+  ("q" my-record-stop "Quit" :exit t))
+
+(defun my-subed-add-filenames-to-subtitles ()
+  (interactive)
+  (goto-char (point-min))
+  (while (re-search-forward
+          (concat
+           "\\(NOTE: .*?\n\\)?\\(" subed-vtt--regexp-timestamp " \\-\\-> " subed-vtt--regexp-timestamp "\n\\)")
+          nil t)
+    (replace-match (concat "NOTE: " (subed-guess-video-file) "\n" (match-string 2)) t t nil 0)))
+#+end_src
+#+RESULTS:
+:results:
+my-record-subed/body
+:end:
+
 Split window; left side has the script, right has the notes I'm making
 Vtt format
 NOTE filename
@@ -930,12 +1028,23 @@ And then take the images and drop them in
 
 #+begin_src emacs-lisp
 (require 'subed-vtt)
+
 (defun my-record-format-as-ffmpeg-selection (list)
-  "LIST is a list of (start-ms end-ms text)."
-  (mapconcat
-   (lambda (o)
-     (format "between(t,%0.3f,%.03f)" (/ (car o) 1000.0) (/ (cadr o) 1000.0)))
-   list "+"))
+  "LIST is a list of (start-ms end-ms text description filename)."
+  (let* ((filenames (seq-uniq (mapcar (lambda (o) (elt o 4)) list))))
+    (cons
+     (mapconcat (lambda (o) (concat "-i " (shell-quote-argument (expand-file-name o)))) filenames " ")
+     (mapconcat 'identity
+                (seq-map-indexed
+                 (lambda (o i)
+                   (seq-let (start-ms end-ms text description filename) o
+                     (format "[%d:a]aselect='between(t,%.3f,%.3f)',asetpts='N/SR/TB'[r%d];"
+                             (seq-position filenames filename 'string=)
+                             (/ start-ms 1000.0) (/ end-ms 1000.0)
+                             i)))
+                 list)
+                ""))))
+
 (defun my-record-format-as-audacity-labels (list)
   "LIST is a list of (start-ms end-ms text)."
   (mapconcat
@@ -951,14 +1060,15 @@ And then take the images and drop them in
   (interactive "r")
   (goto-char beg)
   (cl-loop
-   while (re-search-forward "\\(.*?\\) --> \\(.*?\\)\n\\(.*\\)\n\n*" end t)
+   while (re-search-forward "\\(NOTE: \\(.+?\\)\n\\)?\\(.*?\\) --> \\(.*?\\)\n\\(.*\\)\n\n*" end t)
    collect
-   (let* ((start (match-string 1))
-          (end (match-string 2))
-          (caption (match-string-no-properties 3))
+   (let* ((filename (match-string 2))
+          (start (match-string 3))
+          (end (match-string 4))
+          (caption (match-string-no-properties 5))
           (start-ms (subed-vtt--timestamp-to-msecs start))
           (end-ms (subed-vtt--timestamp-to-msecs end)))
-     (list start-ms end-ms caption))))
+     (list start-ms end-ms caption nil filename))))
 
 (defun my-record-export-labels (&optional beg end)
   (interactive "r")
@@ -975,21 +1085,25 @@ And then take the images and drop them in
                (my-record-get-selection-for-region beg end)))))) 
 (defvar my-record-recording nil "File to split up.")
 (defun my-record-compose-audio (&optional beg end)
-  (interactive "r")
-  (setq beg (or beg (point-min))
-        end (or end (point-max)))
-  (let (selection
+  (interactive)
+  (let (selection ffmpeg-args
         (file my-record-recording) result)
     (with-current-buffer my-record-segments-buffer
       (goto-char (point-min))
-      (setq selection (my-record-format-as-ffmpeg-selection (my-record-get-selection-for-region beg end))))
+      (setq selection (my-record-get-selection-for-region
+                                                             (or beg (point-min))
+                                                             (or end (point-max))))
+      (setq ffmpeg-args (my-record-format-as-ffmpeg-selection selection)))
     (setq result
-          (format "ffmpeg -y -i %s -af \"aselect='%s',asetpts=N/SR/TB\" -vn -acodec libvorbis %s"
-                  (shell-quote-argument (expand-file-name file))
-                  selection
+          (format "ffmpeg -y %s -filter_complex \"%s%s%s\" -vn -acodec libvorbis %s"
+                  (car ffmpeg-args)
+                  (cdr ffmpeg-args)
+                  (mapconcat (lambda (o) (format "[r%d]" o)) (number-sequence 0 (1- (length selection))) "")
+                  (format "concat=n=%d:v=0:a=1" (length selection))
                   "output.ogg"))
     (kill-new result)
     result))
+
 
 (defun my-record-try-flow (&optional beg end)
   (interactive (list (if (region-active-p) (min (point) (mark)) (point-min))
@@ -1126,54 +1240,78 @@ It looks like using the web interface on my phone to accept or retry segments ad
     ;; (string-join (cons my-record-ffmpeg-executable args) " ")
     output-file))
 
-(defvar my-record-waveform-width 400)
-(defvar my-record-waveform-height 40)
-(defun my-record-waveform-click (event)
+(defvar my-waveform-height 40)
+(defvar my-waveform-clicked-ms nil "Milliseconds of the clicked time on the waveform.")
+(defun my-waveform-click (event)
   (interactive "e")
   "Copy the timestamp of the clicked-on image."
   (let* ((x (car (elt 2 (cadr event))))
-         (string (elt 4 (cadr event))))
-    
-    )
-  (pp event)
-  )
-(defvar my-record-waveform-map
+         (string (elt 4 (cadr event)))
+         (time-ms
+          (+ (* (/ (* 1.0 x) (get-text-property 0 'width))
+                (- (get-text-property 0 'end-ms)
+                   (get-text-property 0 'start-ms)))
+             (get-text-property 0 'start-ms))))
+    (setq my-waveform-clicked-ms time-ms)))
+
+(defvar my-waveform-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-1] #'my-record-waveform-click)
+    (define-key map [mouse-1] #'my-waveform-click)
     map))
-(defun my-record-subed-make-waveform-for-subtitle ()
+(defvar my-waveform-pixels-per-second 100)
+
+(defun my-subed-waveform-pop ()
+  
+  )
+
+(defun my-subed-make-waveform-string (input output start-ms end-ms waveform-width)
+  (let ((string "x"))
+    (put-text-property
+     0 (length string) 'display
+     (create-image
+      (my-record-get-waveform
+       input
+       output
+       waveform-width
+       my-waveform-height
+       start-ms
+       end-ms))
+     string)
+    (put-text-property 0 (length string) 'keymap my-record-waveform-map string)
+    (put-text-property 0 (length string) 'start-ms start-ms string)
+    (put-text-property 0 (length string) 'end-ms end-ms string)
+    (put-text-property 0 (length string) 'width waveform-width string)
+    string))
+
+(defun my-subed-get-waveform-at-point ()
+  (let* ((filename (concat (make-temp-name temporary-file-directory) ".png"))
+         (start-ms (subed-subtitle-msecs-start))
+         (end-ms (subed-subtitle-msecs-stop))
+         (waveform-width (* 0.001 (- end-ms start-ms) my-waveform-pixels-per-second)))
+    (my-subed-make-waveform-string
+     (subed-guess-video-file)
+     filename
+     start-ms
+     end-ms
+     waveform-width)))
+
+(defun my-subed-show-waveform-after-time ()
   (interactive)
-  (let ((filename (concat (make-temp-name temporary-file-directory) ".png"))
-        (start-ms (subed-subtitle-msecs-start))
-        (end-ms (subed-subtitle-msecs-stop))
-        image overlay)
-    (save-excursion
-      (remove-overlays
-       (subed-jump-to-subtitle-time-start)
-       (or (subed-jump-to-subtitle-end) (point-max))
-       'waveform t)
-      (setq image (create-image
-                   (my-record-get-waveform
-                    (subed-guess-video-file)
-                    filename
-                    my-record-waveform-width
-                    my-record-waveform-height
-                    start-ms
-                    end-ms)))
-      (subed-jump-to-subtitle-time-stop)
-      (end-of-line)
-      (let* ((string "x")
-             (overlay (make-overlay (point) (point))))
-        (put-text-property 0 (length string) 'display image string)
-        (put-text-property 0 (length string) 'keymap my-record-waveform-map string)
-        (put-text-property 0 (length string) 'start-ms start-ms string)
-        (put-text-property 0 (length string) 'end-ms end-ms string)
-        (overlay-put overlay 'waveform t)
-        (overlay-put overlay 'before-string string)))))
-(defun my-record-subed-show-waveforms ()
+  (save-excursion
+    (remove-overlays
+     (subed-jump-to-subtitle-time-start)
+     (or (subed-jump-to-subtitle-end) (point-max))
+     'waveform t)
+    (subed-jump-to-subtitle-time-stop)      
+    (end-of-line)
+    (let ((overlay (make-overlay (point) (point))))
+      (overlay-put overlay 'waveform t)  
+      (overlay-put overlay 'before-string (my-subed-get-waveform-at-point)))))
+
+(defun my-subed-show-waveforms ()
   (interactive)
   (subed-for-each-subtitle (point-min) (point-max)
-    (my-record-subed-make-waveform-for-subtitle)))
+    (my-subed-show-waveform-after-time)))
 
 ;; (my-record-get-waveform
 ;;  "~/code/emacsconf-2021-emacs-news-highlights/tmp/2021-10-21-234703.ogg"
@@ -1200,7 +1338,25 @@ Saves to a temp file and puts the filename in the kill ring."
     :results:
     screenshot-svg
     :end:
-
+* Backstory
+- rough outline
+- filled in with top posts, review of Emacs News Highlights
+- draft
+- wrapped at ~49 characters with help from display-fill-column-indicator-mode
+- recorded audio using a hydra to capture timestamps
+- keyboard sound was too loud
+- web interface
+- visuals
+  - images
+  - animated GIFs
+  - speeding up videos
+- burning in captions
+- display waveforms
+- buttons? but I can't seem to move the point from a button lambda.
+- ugh. Next attempt: record longer segments, and then split things
+  afterwards.
+  
+  
 * Image credits and sources
 
 - async-python-demo: https://blog.tecosaur.com/tmio/2021-05-31-async.html
