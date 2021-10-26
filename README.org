@@ -1561,11 +1561,10 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
            ;(if end-ms (list "-to" (format "%.3f" (/ end-ms 1000.0)) "-copyts"))
            (list
             "-filter_complex"
-            (shell-quote-argument
             (format "[0:a]aselect='between(t,%.3f,%.3f)',asetpts='N/SR/TB'[p];[p]showwavespic=s=%dx%d"
                     (/ start-ms 1000.0)
                     (/ end-ms 1000.0)
-                    width height))
+                    width height)
             "-frames:v"
             "1"
             "-y"
@@ -1574,7 +1573,6 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
            my-record-ffmpeg-executable
            nil nil nil
            args)
-    (kill-new (string-join (cons my-record-ffmpeg-executable args) " "))
     output-file))
 
 (defvar my-waveform-height 40)
@@ -1585,11 +1583,11 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
 (defun my-waveform-mouse-event-to-ms (event)
   (let* ((x (car (elt (cadr event) 8)))
          (width (car (elt (cadr event) 9))))
-    (+ (* (/ (* 1.0 x)
-             width)
-          (- (plist-get (cdr (elt (cadr event) 7)) :end-ms)
-             (plist-get (cdr (elt (cadr event) 7)) :start-ms)))
-       (plist-get (cdr (elt (cadr event) 7)) :start-ms))))
+    (floor (+ (* (/ (* 1.0 x)
+                    width)
+                 (- (plist-get (cdr (elt (cadr event) 7)) :end-ms)
+                    (plist-get (cdr (elt (cadr event) 7)) :start-ms)))
+              (plist-get (cdr (elt (cadr event) 7)) :start-ms)))))
 
 (defun my-waveform-subed-set-start (event)
   (interactive "e")
@@ -1604,13 +1602,13 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
 (defun my-waveform-subed-copy-timestamp (event)
   (interactive "e")
   (let* ((ms (my-waveform-mouse-event-to-ms event))
-         (ts (subed-vtt--msecs-to-timestamp ms)))
-    (message "%s" ts)
+         (ts (subed-msecs-to-timestamp ms)))
+    (message "%d %s" ms ts)
     (my-waveform-play-sample (plist-get (cdr (elt (cadr event) 7)) :filename)
                              ms (min
                                  (plist-get (cdr (elt (cadr event) 7)) :end-ms)
                                  (+ ms (* 1000.0 my-waveform-sample-seconds))))
-    (kill-new ts)))
+    (kill-new ts))) 
 
 (defun my-waveform-subed-split (event)
   (interactive "e")
@@ -1677,6 +1675,20 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
                'buffer (current-buffer)
                'filename sound-file))
 
+(defun my-waveform-subed-waveform-string-for-segment (sound-file start-ms end-ms)
+  (let* ((width (* (- end-ms start-ms) my-waveform-pixels-per-second 0.001))
+         (image-file (my-record-get-waveform sound-file
+                                             (concat (make-temp-name "/tmp/waveform") ".png")
+                                             width
+                                             my-waveform-height
+                                             start-ms end-ms)))
+    (propertize "x"
+                'display
+                (create-image image-file nil nil
+                              :start-ms start-ms
+                              :end-ms end-ms
+                              :filename sound-file))))
+
 (defun my-subed-make-waveform-string (sound-file start-ms end-ms &rest args)
   (let* ((image-filename (concat (file-name-sans-extension sound-file) ".png"))
          (image-size (or (plist-get args :image-size) (image-size (create-image image-filename) t)))
@@ -1699,11 +1711,10 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
                    :image-size image-size)
                   (svg-image svg)))))
 
-(defun my-waveform-subed-waveform-at-point (sound-file &optional image)
+(defun my-waveform-subed-waveform-at-point ()
   (let* ((start-ms (subed-subtitle-msecs-start))
-         (end-ms (subed-subtitle-msecs-stop))
-         (image (or image (create-image (concat (file-name-sans-extension (subed-guess-video-file)) ".png")))))
-    (my-subed-make-waveform-string-from-image sound-file image start-ms end-ms)))
+         (end-ms (subed-subtitle-msecs-stop)))
+    (my-waveform-subed-waveform-string-for-segment (subed-guess-video-file) start-ms end-ms)))
 
 (defun my-waveform-subed-remove-all ()
   (interactive)
@@ -1711,32 +1722,25 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
 
 (defun my-waveform-subed-show-after-time (&optional filename image)
   (interactive)
-  (let* ((image-filename (or filename (my-record-get-waveform-for-whole-file (subed-guess-video-file))))
-         (image (or image (create-image image-filename))))
-    (save-excursion
-      (remove-overlays
-       (subed-jump-to-subtitle-time-start)
-       (or (subed-jump-to-subtitle-end) (point-max))
-       'waveform t)
-      (subed-jump-to-subtitle-time-stop)      
-      (end-of-line)
-      (let ((overlay (make-overlay (point) (point))))
-        (overlay-put overlay 'waveform t)  
-        (overlay-put overlay 'before-string (propertize
-                                             (my-waveform-subed-waveform-at-point image-filename image)
-                                             'keymap
-                                             my-waveform-subed-map))))))
+  (save-excursion
+    (remove-overlays
+     (subed-jump-to-subtitle-time-start)
+     (or (subed-jump-to-subtitle-end) (point-max))
+     'waveform t)
+    (subed-jump-to-subtitle-time-stop)      
+    (end-of-line)
+    (let ((overlay (make-overlay (point) (point))))
+      (overlay-put overlay 'waveform t)  
+      (overlay-put overlay 'before-string
+                   (propertize
+                    (my-waveform-subed-waveform-at-point)
+                    'keymap
+                    my-waveform-subed-map)))))
 
 (defun my-subed-show-waveforms ()
   (interactive)
-  (let* ((sound-file (subed-guess-video-file))
-         (image-filename
-          (my-record-get-waveform-for-whole-file
-           (subed-guess-video-file)
-           (concat (file-name-sans-extension (subed-guess-video-file)) ".png")))
-         (image (create-image image-filename) t))
-    (subed-for-each-subtitle (point-min) (point-max) nil
-      (save-excursion (my-waveform-subed-show-after-time sound-file image)))))
+  (subed-for-each-subtitle (point-min) (point-max) nil
+    (save-excursion (my-waveform-subed-show-after-time))))
 
 (defun my-subed-read-current-subtitle-ms-from-waveform ()
   (interactive)
