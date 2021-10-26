@@ -163,7 +163,7 @@ https://emacsconf.org/2021/talks/news/ .
    but it's well worth looking into
    even if you use a different system. 
    Embark lets you have context-sensitive shortcuts
-   that work on things in buffers, minibuffer content,
+   that work on things in buffers, minibuffers,
    and even collections of things.
    You can also use it
    when you start doing one command
@@ -206,7 +206,7 @@ https://emacsconf.org/2021/talks/news/ .
    and indentation for Lisp.
    #+CAPTION: Extending Emacs in Rust with Dynamic Modules - emacsconf.org/2021/talks/rust/
    [[file:images/Screenshot_20211020_213423.png]]
-   If you're curious about dynamic modules,
+   If you're curious,
    check out the talk on
    [[https://emacsconf.org/2021/talks/rust/][Extending Emacs in Rust with Dynamic Modules]].
 7. 
@@ -273,7 +273,7 @@ https://emacsconf.org/2021/talks/news/ .
 9. 
    #+CAPTION: 9. Lots of posts and videos: System Crafters... - systemcrafters.cc/
    [[file:images/Screenshot_20211021_002413.png]]
-   There have been a lot of great posts, videos 
+   There have been a lot of great posts, videos,
    and livestreams about Emacs this year.
    In addition to the ones from [[https://systemcrafters.cc/][System Crafters]],
    #+CAPTION: Emacs Elements... - www.youtube.com/channel/UCe5excZqMeG1CIW-YhMTCEQ
@@ -281,8 +281,7 @@ https://emacsconf.org/2021/talks/news/ .
    [[https://www.youtube.com/channel/UCe5excZqMeG1CIW-YhMTCEQ][Emacs Elements]],
    #+CAPTION: Protesilaos Stavrou... - protesilaos.com/
    [[file:images/Screenshot_20211021_002254.png]]
-   and [[https://protesilaos.com/][Protesilaos]] 
-   (who has started livestreaming),
+   and [[https://protesilaos.com/][Protesilaos]],
    #+CAPTION: John Kitchin... - www.youtube.com/user/jrkitchin
    [[file:images/Screenshot_20211021_002218.png]]
    [[https://www.youtube.com/user/jrkitchin][John Kitchin]]
@@ -1527,25 +1526,6 @@ It looks like using the web interface on my phone to accept or retry segments ad
 Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might work now. 
 #+begin_src emacs-lisp
 (defvar my-record-ffmpeg-executable "ffmpeg")
-(defun my-record-get-waveform-for-whole-file (sound-file)
-  (let* ((args
-          (append
-           (list "-i" sound-file)
-           (list
-            "-filter_complex"
-            (format "showwavespic=s=%dx%d"
-                    (* (my-record-segment-get-video-duration-ms sound-file) my-waveform-pixels-per-second 0.001)
-                    my-waveform-height)
-            "-frames:v"
-            "1"
-            "-y"
-            (concat (file-name-sans-extension sound-file) ".png")))))
-    (apply 'call-process
-           my-record-ffmpeg-executable
-           nil nil nil
-           args)
-    ;; (string-join (cons my-record-ffmpeg-executable args) " ")
-    (concat (file-name-sans-extension sound-file) ".png")))
 
 (defun my-record-get-waveform (sound-file output-file width height &optional start-ms end-ms)
   (setq start-ms (or start-ms 0))
@@ -1883,8 +1863,8 @@ my-record-ffmpeg-review-recording
 
 https://github.com/larsmagne/wave
 https://lars.ingebrigtsen.no/2011/04/17/editing-sound-files-in-emacs/amp/
-
-
+* Write-ups
+** 
 * Image credits and sources
 
 - async-python-demo: https://blog.tecosaur.com/tmio/2021-05-31-async.html
