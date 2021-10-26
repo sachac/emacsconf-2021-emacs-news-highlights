@@ -305,9 +305,7 @@ https://emacsconf.org/2021/talks/news/ .
 [[file:images/Screenshot_20211021_002952.png]]
 
 If you'd like to add something I've missed,
-please add them to the collaborative pad
-if you're watching this live, 
-add them to the wiki page, 
+please add them to the [[https://emacsconf.org/2021/talks/news][wiki page]], 
 or e-mail me at [[mailto:sacha@sachachua.com][sacha@sachachua.com]] . 
 That's all for this quick review. 
 Enjoy the rest of EmacsConf 2021!
@@ -583,9 +581,7 @@ https://emacsconf.org/2021/talks/news/ .
 #+CAPTION: Emacs News Highlights - emacsconf.org/2021/talks/news
 [[file:images/Screenshot_20211021_002952.png]]
 If you'd like to add something I've missed,
-please add them to the collaborative pad
-if you're watching this live, 
-add them to the wiki page, 
+please add them to the wiki page, 
 or e-mail me at [[mailto:sacha@sachachua.com][sacha@sachachua.com]] . 
 That's all for this quick review. 
 Enjoy the rest of EmacsConf 2021!
@@ -1591,23 +1587,34 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
 
 (defun my-waveform-subed-set-start (event)
   (interactive "e")
-  (subed-set-subtitle-time-start (my-waveform-mouse-event-to-ms event))
-  (my-waveform-subed-show-after-time))
+  (let ((marker (plist-get (cdr (elt (cadr event) 7)) :marker)))
+    (with-current-buffer (marker-buffer marker)
+      (save-excursion
+        (goto-char (marker-position marker))
+        (subed-set-subtitle-time-start (my-waveform-mouse-event-to-ms event))
+        (my-waveform-subed-show-after-time)))))
 
 (defun my-waveform-subed-set-stop (event)
   (interactive "e")
-  (subed-set-subtitle-time-stop (my-waveform-mouse-event-to-ms event))
-  (my-waveform-subed-show-after-time))
+  (let ((marker (plist-get (cdr (elt (cadr event) 7)) :marker)))
+    (with-current-buffer (marker-buffer marker)
+      (save-excursion
+        (goto-char (marker-position marker))
+        (subed-set-subtitle-time-stop (my-waveform-mouse-event-to-ms event))  
+        (my-waveform-subed-show-after-time)))))
 
 (defun my-waveform-subed-copy-timestamp (event)
   (interactive "e")
-  (let* ((ms (my-waveform-mouse-event-to-ms event))
-         (ts (subed-msecs-to-timestamp ms)))
+  (let* ((marker (plist-get (cdr (elt (cadr event) 7)) :marker))
+         (ms (my-waveform-mouse-event-to-ms event))
+         (ts (with-current-buffer (marker-buffer marker) (subed-msecs-to-timestamp ms))))
     (message "%d %s" ms ts)
     (my-waveform-play-sample (plist-get (cdr (elt (cadr event) 7)) :filename)
                              ms (min
                                  (plist-get (cdr (elt (cadr event) 7)) :end-ms)
                                  (+ ms (* 1000.0 my-waveform-sample-seconds))))
+    (with-current-buffer (marker-buffer marker)
+      (subed-mpv-jump ms))
     (kill-new ts))) 
 
 (defun my-waveform-subed-split (event)
@@ -1675,7 +1682,7 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
                'buffer (current-buffer)
                'filename sound-file))
 
-(defun my-waveform-subed-waveform-string-for-segment (sound-file start-ms end-ms)
+(defun my-waveform-subed-waveform-string-for-segment (sound-file start-ms end-ms marker)
   (let* ((width (* (- end-ms start-ms) my-waveform-pixels-per-second 0.001))
          (image-file (my-record-get-waveform sound-file
                                              (concat (make-temp-name "/tmp/waveform") ".png")
@@ -1684,10 +1691,15 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
                                              start-ms end-ms)))
     (propertize "x"
                 'display
-                (create-image image-file nil nil
-                              :start-ms start-ms
-                              :end-ms end-ms
-                              :filename sound-file))))
+                (prog1 (create-image (with-temp-buffer
+                                       (insert-file-contents-literally image-file)
+                                       (string-as-unibyte (buffer-string)))
+                                     nil t
+                                     :start-ms start-ms
+                                     :end-ms end-ms
+                                     :filename sound-file
+                                     :marker marker)
+                  (delete-file image-file)))))
 
 (defun my-subed-make-waveform-string (sound-file start-ms end-ms &rest args)
   (let* ((image-filename (concat (file-name-sans-extension sound-file) ".png"))
@@ -1714,7 +1726,7 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
 (defun my-waveform-subed-waveform-at-point ()
   (let* ((start-ms (subed-subtitle-msecs-start))
          (end-ms (subed-subtitle-msecs-stop)))
-    (my-waveform-subed-waveform-string-for-segment (subed-guess-video-file) start-ms end-ms)))
+    (my-waveform-subed-waveform-string-for-segment (subed-guess-video-file) start-ms end-ms (point-marker))))
 
 (defun my-waveform-subed-remove-all ()
   (interactive)
@@ -1759,6 +1771,17 @@ Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might wo
             (delete-window)
             (kill-buffer "*Waveform*")))))
     my-waveform-clicked-ms))
+
+(defun my-waveform-subed-show-waveforms-after-split (&rest args)
+  (my-waveform-subed-show-after-time)
+  (save-excursion
+    (subed-backward-subtitle-time-start)
+    (my-waveform-subed-show-after-time))
+  )
+(advice-add 'subed-split-subtitle
+            :after
+            #'my-waveform-subed-show-waveforms-after-split
+            )
 ;; (my-record-get-waveform
 ;;  "~/code/emacsconf-2021-emacs-news-highlights/tmp/2021-10-21-234703.ogg"
 ;;  "tmp/waveform.png"
@@ -1790,6 +1813,42 @@ Saves to a temp file and puts the filename in the kill ring."
     :results:
     screenshot-svg
     :end:
+** Emacs screen recording
+
+#+begin_src emacs-lisp
+(defvar my-record-ffmpeg-process nil)
+(defvar my-record-ffmpeg-screen-recording-filename "/tmp/test.mkv")
+(defun my-record-ffmpeg-toggle-recording ()
+  (interactive)
+  (if (process-live-p my-record-ffmpeg-process)
+      (progn
+        (my-record-ffmpeg-stop-recording-screen)
+        (message "Stopped."))
+    (progn
+      (my-record-ffmpeg-start-recording-screen)
+      (message "Recording..."))))
+                                          
+(defun my-record-ffmpeg-start-recording-screen ()
+  (interactive)
+  (my-record-ffmpeg-stop-recording-screen)
+  (setq my-record-ffmpeg-process
+        (start-process "ffmpeg" nil my-record-ffmpeg-executable
+                       "-y"
+                       "-f" "x11grab" "-r" "25" "-i" ":0.0" "-f" "pulse" "-i" "default" "-preset" "ultrafast" "-crf" "18" "-qscale" "0" my-record-ffmpeg-screen-recording-filename)))
+(defun my-record-ffmpeg-stop-recording-screen ()
+  (interactive)
+  (if (process-live-p my-record-ffmpeg-process)
+      (quit-process my-record-ffmpeg-process)))
+(defun my-record-ffmpeg-review-recording ()
+  (interactive)
+  (mpv-play my-record-ffmpeg-screen-recording-filename ))
+#+end_src
+
+#+RESULTS:
+:results:
+my-record-ffmpeg-review-recording
+:end:
+
 * Backstory
 - previous
   - Record everything, edit in Audacity, and then align afterwards in Emacs or via YouTube
