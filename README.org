@@ -658,7 +658,7 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
             (shell-quote-argument (expand-file-name filename))))))
 
 (defvar my-record-description-height 50 "Number of pixels for top description in video.")
-(defvar my-record-caption-height 150 "Number of pixels to leave at the bottom for captions in video.")
+(defvar my-record-caption-height 75 "Number of pixels to leave at the bottom for captions in video.")
 (defvar my-record-output-video-width 1280)
 (defvar my-record-output-video-height 720)
 (defun my-record-segment-scale-filter (o)
@@ -675,86 +675,124 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
             )))
 
 (defvar my-record-description-drawtext-filter-params "fontcolor=white:x=5:y=5:fontsize=40:font=sachacHand")
+
+(defun my-record-ffmpeg-make-description-filter (description)
+  "Return the FFMPEG filter needed to add DESCRIPTION as text."
+  (if description
+      (concat ",drawtext=" my-record-description-drawtext-filter-params ":text='"
+              description ; TODO quote this properly
+              "'")
+    ""))
+(defun my-record-ffmpeg-prepare-video (visual-file duration scale description-filter i)
+  (list
+   :input
+   (list "-i" visual-file)
+   :filter
+   (let ((video-duration (my-record-segment-get-video-duration-ms visual-file)))
+     (format
+      "[%d:v]setpts=PTS*%.3f,%s%s[r%d];"
+      i
+      (/ duration video-duration)
+      scale
+      description-filter
+      i))))
+
+(defun my-record-ffmpeg-prepare-animated-gif (visual-file duration scale description-filter i)
+  (let ((gif-frames (my-record-segment-get-frames visual-file)))
+    (list
+     :input
+     (list "-r" (format "%.3f" (/ gif-frames (/ duration 1000.0))) "-i" visual-file)
+     :filter
+     ;; (format "-i %s" filename)
+     (format "[%d:v]%s%s[r%d];" i scale description-filter i))))
+
+(defun my-record-ffmpeg-prepare-static-image (visual-file duration scale description-filter i)
+  (list
+   :input
+   (list "-loop" "1" "-t" (format "%.3f" (/ duration 1000.0)) "-i" visual-file)
+   :filter
+   (format "[%d:v]%s%s[r%d];" i scale description-filter i)))
+
+(defun my-record-selection-visuals (selection)
+  "Return selection segments containing visuals with adjusted durations."
+  (let (current result)
+    (while selection
+      (when (plist-get (car selection) :visual-file)
+        (setq current (car selection))
+        (setf current (plist-put current :visual-duration 0))
+        (setq result (cons current result)))
+      (setf current (plist-put current :visual-duration (+ (plist-get current :visual-duration)
+                                                           (- (plist-get (car selection) :stop-ms)
+                                                              (plist-get (car selection) :start-ms)))))
+      (setq selection (cdr selection)))
+    (nreverse result)))
+
 (defun my-record-format-selection-as-visuals (selection)
-  (let* (info)
+  (let* (info filter input visuals)
+    (setq visuals (my-record-selection-visuals selection))
     (setq info
           (seq-map-indexed
            (lambda (o i)
-             (seq-let (start-ms end-ms caption description description-filter) o
-               (setq description-filter
-                     (if description
-                         (concat ",drawtext=\"" my-record-description-drawtext-filter-params ":text='"
-                                 description ; TODO quote this properly
-                                 "'\"")
-                       ""))
-               (when (string-match "file:\\([^]]+\\)" caption)
-                 (let* ((filename (match-string 1 caption))
-                        (duration (- end-ms start-ms))
-                        (scale (my-record-segment-scale-filter o)))
-                   (cond
-                    ((string-match "mp4" caption)
-                     (list
-                      (format "-i %s" filename)
-                      (let ((video-duration (my-record-segment-get-video-duration-ms filename)))
-                        (format
-                         "[%d:v]setpts=PTS*%.3f,%s%s[r%d];"
-                         i
-                         (/ duration video-duration)
-                         scale
-                         description-filter
-                         i))))
-                    ((string-match "gif$" filename)
-                     (let ((gif-frames (my-record-segment-get-frames filename)))
-                       (list
-                        (format "-r %0.3f -i %s" (/ gif-frames (/ duration 1000.0)) filename)
-                        ;; (format "-i %s" filename)
-                        (format "[%d:v]%s%s[r%d];" i scale description-filter i))))
-                    (t
-                     (list
-                      (format "-loop 1 -t %0.3f -i %s"
-                              (/ duration 1000.0)
-                              (shell-quote-argument filename))
-                      (format "[%d:v]%s%s[r%d];" i scale description-filter i))))))))
-           selection))
-    (concat
-     (mapconcat 'car info " ")
-     " -filter_complex \""
-     (mapconcat 'cadr info "")
-     (mapconcat
-      (lambda (o) (format "[r%d]" o))
-      (number-sequence 0 (1- (length selection)))
-      "")
-     (format "concat=n=%d:v=1:a=0\"" (length selection)))))
+             (let* ((visual-description (plist-get o :visual-description))
+                    (visual-file (plist-get o :visual-file))
+                    (visual-duration (plist-get o :visual-duration))
+                    (description-filter (my-record-ffmpeg-make-description-filter visual-description))
+                    (scale (my-record-segment-scale-filter o)))
+               (funcall 
+                (cond
+                 ((string-match "mp4" visual-file) 'my-record-ffmpeg-prepare-video)
+                 ((string-match "gif$" visual-file) 'my-record-ffmpeg-prepare-animated-gif)
+                 (t 'my-record-ffmpeg-prepare-static-image))
+                visual-file visual-duration scale description-filter i)))
+           visuals))
+    (setq filter (list
+                  (mapconcat (lambda (o) (plist-get o :filter)) info "")
+                  (mapconcat
+                   (lambda (o) (format "[r%d]" o))
+                   (number-sequence 0 (1- (length visuals)))
+                   "")
+                  (format "concat=n=%d:v=1:a=0" (length visuals))))
+    (setq input (apply 'seq-concatenate 'list (mapcar (lambda (o) (plist-get o :input)) info)))
+    (append
+     input
+     (list
+      "-filter_complex"
+      (string-join
+       filter
+       "")))))
+
 (defvar my-record-segments-buffer "*Segments*" "Buffer with the segments.")
 (defun my-record-compile-visuals ()
   (interactive)
-  (let ((result
-         (concat "ffmpeg -y "
-                 (with-current-buffer my-record-segments-buffer
-                   (my-record-format-selection-as-visuals (my-record-get-selection-for-region (point-min) (point-max))))
-                 " -shortest -c:v vp8 -vsync 1 -b:v 800k visuals.webm")))
-    (kill-new result)
-    result))
+  (let ((args (append
+               (my-record-format-selection-as-visuals (my-record-get-selection-for-region (point-min) (point-max)))
+               (list
+                "-y" "-shortest" "-c:v" "vp8" "-vsync" "2" "-b:v" "800k" "visuals.webm"))))
+    (with-current-buffer (get-buffer-create "*ffmpeg*")
+      (kill-new (concat "ffmpeg " (mapconcat 'shell-quote-argument args " ")))
+      (insert "ffmpeg " (mapconcat 'shell-quote-argument args " ") "\n")
+      ;; (apply 'call-process my-record-ffmpeg-executable nil t nil args)
+      (display-buffer (current-buffer)))))
 (defun my-record-test-visuals (&optional limit)
   (interactive "p")
-  (let* ((visuals (my-talk-with-script
-                   (cl-loop
-                    while (re-search-forward "#\\+CAPTION: \\(.+\\)\n[ \t]*\\(\\[\\[file:[^]]+\\]\\)" nil t)
-                    collect (list 1000 2000
-                                  (match-string-no-properties 2)
-                                  (match-string-no-properties 1)
-                                  ))))
-         (result
-          (concat "ffmpeg -y "
-                  (with-current-buffer my-record-segments-buffer
-                    (my-record-format-selection-as-visuals
-                     (if (> limit 1)
-                         (seq-take visuals limit)
-                       visuals)
-                     ))
-                  " -i visuals.vtt -c:v vp8 -vsync 2 -b:v 800k visuals.webm")))
-    (kill-new result)
-    result))
+  (let* ((visuals
+          (seq-filter (lambda (o) (plist-get o :visual-file))
+                      (my-record-get-selection-for-region (point-min) (point-max))))
+         (formatted-visuals (my-record-format-selection-as-visuals
+            (seq-map
+             (lambda (o)
+               (setf o (plist-put o :stop-ms (+ 1000 (plist-get o :start-ms))))
+               o)
+             (if (and (numberp limit) (> limit 1)) (seq-take visuals limit) visuals))))
+         (args
+          (append
+           formatted-visuals
+           (list "-y" "-shortest" "-c:v" "vp8" "-vsync" "2" "-b:v" "800k" "visuals.webm"))))
+    (with-current-buffer (get-buffer-create "*ffmpeg*")
+      (erase-buffer)
+      (insert "ffmpeg " (mapconcat 'shell-quote-argument args " ") "\n")
+      (apply 'call-process my-record-ffmpeg-executable nil t nil args)
+      (display-buffer (current-buffer)))))
 #+end_src
 
 #+RESULTS:
@@ -1373,8 +1411,7 @@ And then take the images and drop them in
                                 :stop-ms end-ms
                                 :caption caption
                                 :visual-description description
-                                :visual-file file
-                                nil)
+                                :visual-file file)
                           result)))))
     (reverse result)))
 
@@ -1393,17 +1430,16 @@ And then take the images and drop them in
                (my-record-get-selection-for-region beg end)))))) 
 (defvar my-record-recording nil "File to split up.")
 
-(defun my-record-compose-audio (&optional beg end)
+(defun my-record-compile-audio (&optional beg end)
   (interactive)
   (let (selection ffmpeg-args
                   (file my-record-recording) result)
-    (with-current-buffer my-record-segments-buffer
-      (goto-char (point-min))
-      (setq file (subed-guess-video-file))
-      (setq selection (my-record-get-selection-for-region
-                       (or beg (point-min))
-                       (or end (point-max))))
-      (setq ffmpeg-args (my-record-format-as-ffmpeg-selection selection)))
+    (goto-char (point-min))
+    (setq file (subed-guess-video-file))
+    (setq selection (my-record-get-selection-for-region
+                     (or beg (point-min))
+                     (or end (point-max))))
+    (setq ffmpeg-args (my-record-format-as-ffmpeg-selection selection))
     (setq result
           (format "ffmpeg -y -i %s -af \"%s\" -vn -acodec libvorbis %s"
                   file
@@ -1418,7 +1454,7 @@ And then take the images and drop them in
                      (if (region-active-p) (max (point) (mark)) (point-max))
                      ))
   (save-excursion
-    (shell-command-to-string (my-record-compose-audio beg end))
+    (shell-command-to-string (my-record-compile-audio beg end))
     (mpv-play "output.ogg")))
 
 #+end_src
