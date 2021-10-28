@@ -1,3 +1,5 @@
+#+ELEVENTY_COLLECTIONS: _posts
+#+ELEVENTY_BASE_DIR: ~/code/static-blog/
 #+TITLE: Emacs News Highlights
 #+OPTIONS: toc:1
 
@@ -38,14 +40,15 @@ https://emacsconf.org/2021/talks/news/ .
    make everything way faster,
 
    #+CAPTION: Emoji support
-   [[file:images/EmacslZhRzr.svg]]
-
+   [[file:images/emoji.png]]
+   
    and emoji support will probably
    make things more fun. 😎👍
    
    John Wiegley will share more Emacs 28 details
    in his update, so check out his talk.
 
+   
 2.
    #+CAPTION: 2. Org Mode 9.5 - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_100623.png]]
@@ -635,6 +638,37 @@ nil
 Actually, I'd like to get these out of the vtt as well, so I can determine timing.
 
 #+begin_src emacs-lisp
+(defun my-record-get-selection-for-region (beg end)
+  (interactive "r")
+  (goto-char beg)
+  (let (result (current-audio (subed-guess-video-file)))
+    (subed-for-each-subtitle beg end nil
+      (let* ((caption (subed-subtitle-text))
+             (start-ms (subed-subtitle-msecs-start))
+             (end-ms (subed-subtitle-msecs-stop))
+             audio-file
+             description file)
+        (when (string-match "#\\+CAPTION: \\(.+?\\)\n" caption)
+          (setq description (match-string 1 caption))
+          (setq caption (replace-match "" nil t caption)))
+        (if (string-match "#\\+AUDIO: \\(.+?\\)\n" caption)
+            (progn (setq audio-file (match-string 1 caption))
+                   (setq caption (replace-match "" nil t caption)))
+          (setq audio-file current-audio))
+        (when (string-match "\\[\\[file:\\([^]]+?\\)\\].+\n" caption)
+          (setq file (match-string 1 caption))
+          (setq caption (replace-match "" nil t caption)))
+        (if start-ms
+            (setq result (cons 
+                          (list :start-ms start-ms
+                                :stop-ms end-ms
+                                :caption caption
+                                :audio-file audio-file
+                                :visual-description description
+                                :visual-file file)
+                          result)))))
+    (reverse result)))
+
 (defmacro my-talk-with-script (&rest body)
   (declare (debug t))
   `(with-current-buffer my-record-script-buffer
@@ -753,41 +787,144 @@ Actually, I'd like to get these out of the vtt as well, so I can determine timin
                    "")
                   (format "concat=n=%d:v=1:a=0" (length visuals))))
     (setq input (apply 'seq-concatenate 'list (mapcar (lambda (o) (plist-get o :input)) info)))
-    (append
-     input
-     (list
-      "-filter_complex"
-      (string-join
-       filter
-       "")))))
+    (list :input input :filter (string-join filter "")
+          :output (list "-c:v" "vp8" "-vsync" "2" "-b:v" "800k")
+          :input-count (length visuals))))
 
 (defvar my-record-segments-buffer "*Segments*" "Buffer with the segments.")
-(defun my-record-compile-visuals ()
+(defun my-record-format-selection-as-audio (list &rest args)
+  "LIST is a plist of (:start-ms ... :end-ms ... :audio-file)
+ARGS: :start-input should have the numerical index for the starting input file."
+  (let ((temp list) groups current previous)
+    (while temp
+      (setq current
+            (seq-take-while
+             (lambda (o)
+               (prog1 (or (null previous)
+                          (and 
+                           (string= (plist-get o :audio-file) (plist-get previous :audio-file))
+                           (>= (plist-get o :start-ms) (plist-get previous :stop-ms))))
+                 (setq previous o)))
+             temp))
+      (setq groups (cons
+                    (list
+                     :input (list "-i" (plist-get (car current) :audio-file))
+                     :filter (format "aselect='%s',asetpts='N/SR/TB'"
+                                     (mapconcat
+                                      (lambda (o)
+                                        (format "between(t,%.3f,%.3f)"
+                                                (/ (plist-get o :start-ms) 1000.0)
+                                                (/ (plist-get o :stop-ms) 1000.0)))
+                                      current
+                                      "+")
+                                     ))
+                    groups))
+      (setq temp (seq-drop temp (length current)))
+      (setq previous nil))
+    (setq groups (reverse groups))
+    (list
+     :input
+     (seq-mapcat (lambda (o) (plist-get o :input)) groups)
+     :filter
+     (concat
+      (string-join (seq-map-indexed
+                    (lambda (o i)
+                      (format "[%d]%s[%s]"
+                              (+ (plist-get args :start-input) i)
+                              (plist-get o :filter)
+                              (if (> (length groups) 1)
+                                  (format "a%d" i)
+                                "a")))
+                    groups)
+                   ";")
+      (if (> (length groups) 1)
+          (concat
+           ";"
+           (mapconcat (lambda (sink) (format "[a%d]" sink)) (number-sequence 0 (1- (length groups))) "")
+           (format "concat=n=%d:v=0:a=1[a]" (length groups)))
+        ""))
+     :output
+     (list "-map" "[a]" "-acodec" "libvorbis"))))
+
+(defun my-record-compile-audio (&optional beg end &rest args)
   (interactive)
-  (let ((args (append
-               (my-record-format-selection-as-visuals (my-record-get-selection-for-region (point-min) (point-max)))
-               (list
-                "-y" "-shortest" "-c:v" "vp8" "-vsync" "2" "-b:v" "800k" "visuals.webm"))))
+  (apply 'my-record-compile-video (append (list beg end '(audio subtitles)) args)))
+
+(defun my-record-try-flow (&optional beg end)
+  (interactive (list (if (region-active-p) (min (point) (mark)) (point-min))
+                     (if (region-active-p) (max (point) (mark)) (point-max))))
+  (save-excursion
+    (my-record-compile-audio beg end
+                             :sentinel (lambda (process event)
+                                         (when (string-match "finished" event)
+                                           (mpv-play "output.webm"))))))
+
+(defun my-record-compile-video (&optional beg end include &rest args)
+  "Create output.webm with video, audio, and subtitles.
+INCLUDE should be a list of the form '(video audio subtitles)."
+  (interactive (list (if (region-active-p) (min (point) (mark)) (point-min))
+                     (if (region-active-p) (max (point) (mark)) (point-max))
+                     '(video audio subtitles)))
+  (setq include (or include '(video audio subtitles)))
+  (let* ((selection (my-record-get-selection-for-region (or beg (point-min)) (or end (point-max))))
+         (visual-args
+          (when (member 'video include)
+            (my-record-format-selection-as-visuals selection)))
+         (audio-args
+          (when (member 'audio include)
+            (my-record-format-selection-as-audio selection :start-input (or (plist-get visual-args :input-count) 0))))
+         (ffmpeg-args
+          (append
+           (plist-get visual-args :input)
+           (plist-get audio-args :input)
+           (list "-filter_complex" (string-join
+                                    (delq nil
+                                          (list
+                                           (plist-get visual-args :filter)
+                                           (plist-get audio-args :filter)))
+                                    ";"))
+           (when (member 'subtitles include)
+             (list "-i" "output.vtt"))
+           (list "-y" "-shortest" )
+           (plist-get visual-args :output)
+           (plist-get audio-args :output)
+           (list "output.webm")
+           nil)))
+    (when (member 'subtitles include)
+      (with-temp-file "output.vtt"
+        (insert (my-record-format-as-vtt selection))))
     (with-current-buffer (get-buffer-create "*ffmpeg*")
-      (kill-new (concat "ffmpeg " (mapconcat 'shell-quote-argument args " ")))
-      (insert "ffmpeg " (mapconcat 'shell-quote-argument args " ") "\n")
-      ;; (apply 'call-process my-record-ffmpeg-executable nil t nil args)
+      (when (process-live-p my-record-ffmpeg-conversion-process)
+        (quit-process my-record-ffmpeg-conversion-process))
+      (erase-buffer)
+      (kill-new (concat "ffmpeg " (mapconcat 'shell-quote-argument ffmpeg-args " ")))
+      (insert "ffmpeg " (mapconcat 'shell-quote-argument ffmpeg-args " ") "\n")
+      (setq my-record-ffmpeg-conversion-process
+            (apply 'start-process "ffmpeg" (current-buffer) my-record-ffmpeg-executable ffmpeg-args))
+      (if (and (process-live-p my-record-ffmpeg-conversion-process)
+               (plist-get args :sentinel))
+          (set-process-sentinel my-record-ffmpeg-conversion-process (plist-get args :sentinel)))
       (display-buffer (current-buffer)))))
+
+(defvar my-record-ffmpeg-conversion-process nil)
 (defun my-record-test-visuals (&optional limit)
   (interactive "p")
   (let* ((visuals
           (seq-filter (lambda (o) (plist-get o :visual-file))
                       (my-record-get-selection-for-region (point-min) (point-max))))
-         (formatted-visuals (my-record-format-selection-as-visuals
-            (seq-map
-             (lambda (o)
-               (setf o (plist-put o :stop-ms (+ 1000 (plist-get o :start-ms))))
-               o)
-             (if (and (numberp limit) (> limit 1)) (seq-take visuals limit) visuals))))
+         (formatted-visuals
+          (my-record-format-selection-as-visuals
+           (seq-map
+            (lambda (o)
+              (setf o (plist-put o :stop-ms (+ 1000 (plist-get o :start-ms))))
+              o)
+            (if (and (numberp limit) (> limit 1)) (seq-take visuals limit) visuals))))
          (args
           (append
-           formatted-visuals
-           (list "-y" "-shortest" "-c:v" "vp8" "-vsync" "2" "-b:v" "800k" "visuals.webm"))))
+           (plist-get formatted-visuals :input)
+           (list "-filter_complex" (plist-get formatted-visuals :filter))
+           (plist-get formatted-visuals :output)
+           (list "-y" "visuals.webm"))))
     (with-current-buffer (get-buffer-create "*ffmpeg*")
       (erase-buffer)
       (insert "ffmpeg " (mapconcat 'shell-quote-argument args " ") "\n")
@@ -1322,16 +1459,7 @@ And then take the images and drop them in
 #+begin_src emacs-lisp
 (require 'subed-vtt)
 
-(defun my-record-format-as-ffmpeg-selection (list)
-  "LIST is a list of (start-ms end-ms text description filename)."
-  (format "aselect='%s',asetpts='N/SR/TB'"
-          (mapconcat
-           (lambda (o)
-             (format "between(t,%.3f,%.3f)"
-                     (/ (plist-get o :start-ms) 1000.0)
-                     (/ (plist-get o :stop-ms) 1000.0)))
-           list
-           "+")))
+
 
 (defun my-record-format-as-audacity-labels (list)
   "LIST is a list of (start-ms end-ms text)."
@@ -1354,8 +1482,8 @@ And then take the images and drop them in
                            (my-msecs-to-timestamp ms)
                            (my-msecs-to-timestamp (+ ms (- (plist-get o :stop-ms)
                                                            (plist-get o :start-ms))))
-                           (replace-regexp-in-string "#+CAPTION.*?\n\\|\\[[file.*?]]\n" ""
-                                                     (plist-get o :caption) ))
+                           (replace-regexp-in-string "#\\+.*?\n\\|\\[[file.*?]]\n" ""
+                                                     (plist-get o :caption)))
                  (setq ms (+ ms (- (plist-get o :stop-ms)
                                    (plist-get o :start-ms))))))
              list
@@ -1390,30 +1518,7 @@ And then take the images and drop them in
 (defun my-kill-match-string ()
   (kill-new (format "(match-string %d)" (my-subexp-num-at-point))))
 
-(defun my-record-get-selection-for-region (beg end)
-  (interactive "r")
-  (goto-char beg)
-  (let (result)
-    (subed-for-each-subtitle beg end nil
-      (let* ((caption (subed-subtitle-text))
-             (start-ms (subed-subtitle-msecs-start))
-             (end-ms (subed-subtitle-msecs-stop))
-             description file)
-        (when (string-match "#\\+CAPTION: \\(.+?\\)\n" caption)
-          (setq description (match-string 1 caption))
-          (setq caption (replace-match "" nil t caption)))
-        (when (string-match "\\[\\[file:\\([^]]+?\\)\\].+\n" caption)
-          (setq file (match-string 1 caption))
-          (setq caption (replace-match "" nil t caption)))
-        (if start-ms
-            (setq result (cons 
-                          (list :start-ms start-ms
-                                :stop-ms end-ms
-                                :caption caption
-                                :visual-description description
-                                :visual-file file)
-                          result)))))
-    (reverse result)))
+
 
 (defun my-record-export-labels (&optional beg end)
   (interactive "r")
@@ -1430,32 +1535,8 @@ And then take the images and drop them in
                (my-record-get-selection-for-region beg end)))))) 
 (defvar my-record-recording nil "File to split up.")
 
-(defun my-record-compile-audio (&optional beg end)
-  (interactive)
-  (let (selection ffmpeg-args
-                  (file my-record-recording) result)
-    (goto-char (point-min))
-    (setq file (subed-guess-video-file))
-    (setq selection (my-record-get-selection-for-region
-                     (or beg (point-min))
-                     (or end (point-max))))
-    (setq ffmpeg-args (my-record-format-as-ffmpeg-selection selection))
-    (setq result
-          (format "ffmpeg -y -i %s -af \"%s\" -vn -acodec libvorbis %s"
-                  file
-                  ffmpeg-args
-                  "output.ogg"))
-    (with-temp-file "output.vtt"
-      (insert (my-record-format-as-vtt selection)))
-    (shell-command-to-string result)))
 
-(defun my-record-try-flow (&optional beg end)
-  (interactive (list (if (region-active-p) (min (point) (mark)) (point-min))
-                     (if (region-active-p) (max (point) (mark)) (point-max))
-                     ))
-  (save-excursion
-    (shell-command-to-string (my-record-compile-audio beg end))
-    (mpv-play "output.ogg")))
+
 
 #+end_src
 
@@ -1555,11 +1636,18 @@ my-talk-copy-assets-to-subdir
 
 ** Emoji support
 (set-fontset-font "fontset-default" 'symbol "Noto Color Emoji" nil 'prepend)
-** Waveforms
+** Using waveforms to adjust timestamps in WebVTT files by extending subed.el 
+
+When adjusting the timestamps, it's often easier to look at a visual
+representation of the sound and choose the right spot than it is to
+repeatedly play it and try to pause at the right moment.
+
+TODO Write
 
 It looks like using the web interface on my phone to accept or retry segments adds too much of a delay, so I need to adjust some timestamps earlier. It might be easier to finetune timestamps if I can see the waveforms. [[https://github.com/larsmagne/wave][wave]] plots PCM data in Emacs. Maybe I can use [[https://trac.ffmpeg.org/wiki/Waveform][ffmpeg's showwavespic filter]] to show it. I think it would generally be useful to be able to see the waveform for a particular segment in a WebVTT subtitle file.
 
-Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like it might work now. 
+Oh hey, =my-subed-read-current-subtitle-ms-from-waveform= seems like
+it might work now.
 #+begin_src emacs-lisp
 (defvar my-record-ffmpeg-executable "ffmpeg")
 
@@ -1812,6 +1900,7 @@ my-subed-read-current-subtitle-ms-from-waveform
 :end:
 
 ** SVG screenshots
+https://www.reddit.com/r/emacs/comments/idz35e/emacs_27_can_take_svg_screenshots_of_itself/
 #+begin_src emacs-lisp
 (defun screenshot-svg ()
   "Save a screenshot of the current frame as an SVG image.
@@ -1823,11 +1912,21 @@ Saves to a temp file and puts the filename in the kill ring."
       (insert data))
     (kill-new filename)
     (message filename)))
+(defun my-copy-last-screenshot-to-file (new-filename)
+  (interactive (list (read-file-name (format "Copy %s to: " (file-name-nondirectory (my-latest-file my-screenshot-directory))))))
+  (copy-file (my-latest-file my-screenshot-directory) new-filename))
+
+(defun my-copy-last-screenshot-and-insert-into-org (new-filename caption)
+  (interactive (list (read-file-name (format "Copy %s to: " (file-name-nondirectory (my-latest-file my-screenshot-directory))))
+                     (read-string "Caption: ")))
+  (copy-file (my-latest-file my-screenshot-directory) new-filename)
+  (insert "#+CAPTION: " caption "\n"
+          (org-link-make-string (concat "file:" (file-relative-name new-filename))) "\n"))
     #+end_src
 
     #+RESULTS:
     :results:
-    screenshot-svg
+    my-copy-last-screenshot-to-file
     :end:
 ** Emacs screen recording
 
