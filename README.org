@@ -54,10 +54,10 @@ https://emacsconf.org/2021/talks/news/ .
    on native compilation too.
    
 2.
-   #+CAPTION: 2. Org Mode 9.5 - orgmode.org/Changes.html
+   #+CAPTION: 2. Org mode 9.5 - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_100623.png]]
 
-   [[https://orgmode.org/Changes.html][Org Mode is now at version 9.5]].
+   [[https://orgmode.org/Changes.html][Org mode is now at version 9.5]].
    New features include
    a library for [[https://blog.tecosaur.com/tmio/2021-07-31-citations.html#fn.3][managing citations]],
 
@@ -73,7 +73,7 @@ https://emacsconf.org/2021/talks/news/ .
    and better control
    of your [[https://orgmode.org/Changes.html][agenda's appearance]].
    
-   #+CAPTION: Org Mode 9.5 - orgmode.org/Changes.html
+   #+CAPTION: Org mode 9.5 - orgmode.org/Changes.html
    [[file:images/Screenshot_20211020_100623.png]]
    If you've been getting your Org packages
    from Org ELPA,
@@ -295,13 +295,20 @@ https://emacsconf.org/2021/talks/news/ .
    #+CAPTION: Mike Zamansky - cestlaz.github.io/categories/emacs/
    [[file:images/Screenshot_20211021_002452.png]]
    and [[https://cestlaz.github.io/categories/emacs/][Mike Zamansky]] 
-   are both back, hooray!
+   are back, hooray!
+
+   #+CAPTION: Hacking Your Way Around Emacs - mbork.pl/2021-11-06_The_Emacs_Lisp_book_is_finished
+   [[file:images/marcin.png]]
+   And Marcin Borkowski has just finished
+   writing [[http://mbork.pl/2021-11-06_The_Emacs_Lisp_book_is_finished][an intermediate textbook]] on
+   on Emacs Lisp, too!
+   
 10. 
     #+CAPTION: 10. #emacs on libera.chat - www.emacswiki.org/emacs/EmacsChannel
     [[file:images/Screenshot_20211021_002604.png]]
     Lastly, if you want to chat 
     with other Emacs folks
-    and get help on Emacs, Org Mode, 
+    and get help on Emacs, Org mode, 
     or other topics, the #emacs and #org-mode
     Internet Relay Chat or IRC channels
     are now on the [[https://libera.chat]] network
@@ -328,10 +335,15 @@ Enjoy the rest of EmacsConf 2021!
 I've extracted the code I used to record the presentation and put it
 up at https://github.com/sachac/subed-record .
 
+#+begin_src emacs-lisp
+(setq subed-record-compile-description-drawtext-filter-params "fontcolor=white:x=5:y=5:fontsize=40:font=sachacHand")
+#+end_src
+
 Other things I'm using:
 
 ** Copy images
 #+begin_src emacs-lisp
+
 (defvar my-talk-script-heading "Talk plans")
 (defvar my-talk-asset-dir "images")
 (defun my-talk-copy-assets-to-subdir ()
